@@ -82,3 +82,24 @@ async function fetchEmpleadoByCodigoPanel(codigoPanel) {
         return null;
     }
 }
+
+async function fetchEmpleadoByCodigoRepartidor(codigoRepartidor) {
+    try {
+        const response = await fetch(`get_empleado_por_codigo_repartidor?codigo_repartidor=${codigoRepartidor}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Error desconocido');
+        }
+
+        const empleado = await response.json();
+        return empleado;
+    } catch (error) {
+        return null;
+    }
+}

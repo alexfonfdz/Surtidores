@@ -463,12 +463,12 @@ def update_empleado(request):
 
     try:
         # Validar que el empleado exista
-        cur_m.execute("SELECT rol_id, codigo_rol FROM home_empleado WHERE clave_empleado = %s;", (clave_empleado,))
+        cur_m.execute("SELECT id, rol_id, codigo_rol FROM home_empleado WHERE clave_empleado = %s;", (clave_empleado,))
         empleado = cur_m.fetchone()
         if not empleado:
             return JsonResponse({'status': 'error', 'message': 'El empleado con la clave proporcionada no existe.'}, status=404)
 
-        rol_id_actual, codigo_rol_actual = empleado
+        id_empleado, rol_id_actual, codigo_rol_actual = empleado
 
         # Validar si no se modificaron los campos
         if str(rol_id_actual) == str(rol_id) and str(codigo_rol_actual) == str(codigo_rol):
@@ -505,6 +505,32 @@ def update_empleado(request):
         """, (rol_id, codigo_rol, clave_empleado))
 
         conn_m.commit()
+
+        # Actualizar el código de surtidor/panel/repartidor en home_movimiento
+        if rol_id == 2:
+            cur_m.execute("""
+                UPDATE home_movimiento
+                SET codigo_surtidor = %s
+                WHERE surtidor_id = %s;
+            """, (codigo_rol, id_empleado))
+
+            conn_m.commit()
+        if rol_id == 3:
+            cur_m.execute("""
+                UPDATE home_movimiento
+                SET codigo_panel = %s
+                WHERE panel_id = %s;
+            """, (codigo_rol, id_empleado))
+
+            conn_m.commit()
+        if rol_id == 4:
+            cur_m.execute("""
+                UPDATE home_movimiento
+                SET codigo_repartidor = %s
+                WHERE repartidor_id = %s;
+            """, (codigo_rol, id_empleado))
+
+            conn_m.commit()
 
         # Construir el mensaje de respuesta
         if len(cambios) == 1:
@@ -611,6 +637,36 @@ def get_moneda(request):
         return JsonResponse({'error': str(e)}, status=500)
 
 @csrf_exempt
+def get_surtidor(request):
+    try:
+        conn = m.connect(host=ENV_MYSQL_HOST, user=ENV_MYSQL_USER, password=ENV_MYSQL_PASSWORD, database=ENV_MYSQL_NAME, port=ENV_MYSQL_PORT)
+        cur = conn.cursor()
+        cur.execute("SELECT DISTINCT(surtidor_inicio_id) FROM home_movimiento WHERE fecha_entrega IS NOT NULL AND surtidor_inicio_id IS NOT NULL ORDER BY surtidor_inicio_id ASC;")
+        surtidores = cur.fetchall()
+
+        if surtidores:
+            surtidores_ids = [surtidor[0] for surtidor in surtidores if surtidor[0] is not None]
+            if surtidores_ids:
+                query = f"SELECT id, nombre, apellido_paterno, apellido_materno FROM home_empleado WHERE id IN {tuple(surtidores_ids)} ORDER BY nombre ASC;"
+                cur.execute(query)
+                surtidores = cur.fetchall()
+            else:
+                surtidores = []
+        else:
+            surtidores = []
+
+        cur.close()
+        conn.close()
+
+        return JsonResponse(surtidores, safe=False)
+    except m.Error as e:
+        print(f"Error MySQL: {str(e)}")
+        return JsonResponse({'error': f"MySQL error: {str(e)}"}, status=500)
+    except Exception as e:
+        print(f"Error general: {str(e)}")
+        return JsonResponse({'error': f"General error: {str(e)}"}, status=500)
+
+@csrf_exempt
 def get_movimientos(request):
     try:
         search = request.GET.get('search', '')  # Buscar por folio, cliente, sucursal
@@ -621,7 +677,7 @@ def get_movimientos(request):
         status = request.GET.get('status', '')  # Todos, pagado, no pagado
         condicion = request.GET.get('condicion', '')  # Todos, contado, credito (cualquier condicion menos contado o Contado)
         tipo_movimiento = request.GET.get('tipo_movimiento', '')  # Todos, remision o pedido
-        estado_entrega = request.GET.get('estado_entrega', '')  # Todos, surtido, no surtido
+        surtidor_id = request.GET.get('surtidor_id', '')  # Todos, surtidor_id
         desde = request.GET.get('desde', '')
         hasta = request.GET.get('hasta', '')
         cod = request.GET.get('cod', '')  # Si se marca la casilla, mostrar todos los de cod true
@@ -667,6 +723,10 @@ def get_movimientos(request):
             placeholders = ', '.join(['%s'] * len(order_ids))
             query += f" AND (m.id_admin NOT IN ({placeholders}) OR m.id_admin IS NULL)"
             params.extend(order_ids)  # Agregar los valores de order_ids a los parámetros
+
+        if surtidor_id:
+            query += " AND m.surtidor_inicio_id = %s"
+            params.append(surtidor_id)
 
         if estado == 'activas':
             query += " AND m.cancelado = false"
@@ -732,20 +792,6 @@ def get_movimientos(request):
     except Exception as e:
         print(f"Error: {str(e)}")
         return JsonResponse({'error': f"General error: {str(e)}"}, status=500)
-
-@csrf_exempt
-def get_surtidores(request):
-    try:
-        conn = m.connect(host=ENV_MYSQL_HOST, user=ENV_MYSQL_USER, password=ENV_MYSQL_PASSWORD, database=ENV_MYSQL_NAME, port=ENV_MYSQL_PORT)
-        cur = conn.cursor()
-        cur.execute("SELECT id, nombre, apellido_paterno, apellido_materno FROM home_empleado WHERE codigo_surtidor IS NOT NULL AND activo = 1 ORDER BY codigo_surtidor ASC;")
-        surtidores = cur.fetchall()
-        cur.close()
-        conn.close()
-
-        return JsonResponse(surtidores, safe=False)
-    except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
 
 @csrf_exempt
 def get_movimiento(request):
@@ -1991,7 +2037,7 @@ def proceso_asignar_repartidor(request):
         print(f"Error en proceso_surtir: {str(e)}")
         return JsonResponse({'error': f"General error: {str(e)}"}, status=500)
     
-    #Buscar empleado por codigo de surtdor
+
 @csrf_exempt
 def get_empleado_by_codigo_panel(request):
     try:
@@ -2071,6 +2117,164 @@ def update_panel_repartidor_movimiento(request):
 
         return JsonResponse({'message': 'Movimiento actualizado correctamente'}, safe=False)
     except m.Error as e:
+        return JsonResponse({'error': f"MySQL error: {str(e)}"}, status=500)
+    except Exception as e:
+        print(f"Error en update_panel_repartidor_movimiento: {str(e)}")
+        return JsonResponse({'error': f"General error: {str(e)}"}, status=500)
+    
+
+########################################
+#####################################    
+@csrf_exempt
+def get_movimientos_entregados_domicilio(request):
+    try:
+        # Parámetros de filtro
+        codigo_movimiento = request.GET.get('codigo_movimiento', '')  # "Remisión" o "Pedido"
+        status = request.GET.get('status', '')  # "Pendiente", "Parcial" o "Todos"
+        tipo_movimiento = request.GET.get('tipo_movimiento', '')  # "Pedido", "Remisión" o "Todos"
+        page = int(request.GET.get('page', 1))
+        codigo_repartidor = request.GET.get('codigo_repartidor', '')
+        page_size = int(request.GET.get('page_size', 10))
+        order_by = request.GET.get('order_by', 'fecha_movimiento')  # Ordenar por columna
+        order_dir = request.GET.get('order_dir', 'desc')  # "asc" o "desc"
+
+        # Conexión a la base de datos
+        conn = m.connect(host=ENV_MYSQL_HOST, user=ENV_MYSQL_USER, password=ENV_MYSQL_PASSWORD, database=ENV_MYSQL_NAME, port=ENV_MYSQL_PORT)
+        cur = conn.cursor()
+
+        cur.execute("SELECT orden_id_admin FROM home_movimiento WHERE tipo_movimiento = 'Remisión';")
+        orden_id_admin = cur.fetchall()
+        arr_orden_id_admin = [movimiento[0] for movimiento in orden_id_admin]
+
+        # Construir la consulta SQL con filtros
+        query = """
+            SELECT id, fecha_movimiento, folio, folio_adicional, cantidad_pedida, cantidad_entregada, total_pedido, solo_domicilio,
+                   fecha_surtiendo, tipo_movimiento, status, codigo_surtidor
+            FROM home_movimiento
+            WHERE (status = 'Pendiente' OR status = 'Parcial' OR status = 'Vendido')
+            AND fecha_entrega IS NOT NULL AND fecha_surtiendo IS NOT NULL AND solo_domicilio = 1 AND fecha_inicio_repartidor IS NOT NULL
+            AND fecha_final_repartidor IS NULL AND repartidor_id IS NOT NULL AND codigo_repartidor = %s
+        """
+        params = [codigo_repartidor]
+
+        if codigo_movimiento:
+            query += " AND folio LIKE %s"
+            params.append(codigo_movimiento)
+
+        # Manejar el caso de una lista vacía
+        if arr_orden_id_admin:
+            # Generar la lista de placeholders para la cláusula NOT IN
+            placeholders = ', '.join(['%s'] * len(arr_orden_id_admin))
+            
+            # Actualizar la consulta con el formato adecuado
+            query += f" AND id_admin NOT IN ({placeholders})"
+            
+            # Agregar los valores de arr_orden_id_admin a los parámetros de la consulta
+            params.extend(arr_orden_id_admin)
+
+        # Filtro por status
+        if status and status.lower() != 'todos':
+            query += " AND LOWER(status) = LOWER(%s)"
+            params.append(status)
+
+        # Filtro por tipo_movimiento
+        if tipo_movimiento and tipo_movimiento.lower() != 'todos':
+            query += " AND LOWER(tipo_movimiento) = LOWER(%s)"
+            params.append(tipo_movimiento)
+
+        # Ordenar resultados
+        query += f" ORDER BY {order_by} {order_dir.upper()}"
+
+        # Ejecutar la consulta
+        cur.execute(query, params)
+        movimientos = cur.fetchall()
+
+        # Paginación
+        paginator = Paginator(movimientos, page_size)
+        movimientos_page = paginator.get_page(page)
+
+        # Convertir resultados a formato de diccionario
+        movimientos_list = [dict(zip([column[0] for column in cur.description], row)) for row in movimientos_page]
+
+        # Cerrar la conexión
+        cur.close()
+        conn.close()
+
+        # Devolver los resultados en formato JSON
+        return JsonResponse({
+            'total': paginator.count,
+            'num_pages': paginator.num_pages,
+            'current_page': movimientos_page.number,
+            'page_size': page_size,
+            'results': movimientos_list,
+            'has_previous': movimientos_page.has_previous(),
+            'has_next': movimientos_page.has_next()
+        }, safe=False)
+
+    except m.Error as e:
+        return JsonResponse({'error': f"MySQL error: {str(e)}"}, status=500)
+    except Exception as e:
+        print(f"Error en get_movimientos_pendientes: {str(e)}")
+        return JsonResponse({'error': f"General error: {str(e)}"}, status=500)
+
+@csrf_exempt
+def get_empleado_by_codigo_repartidor(request):
+    try:
+        codigo_repartidor = request.GET.get('codigo_repartidor', '')
+
+        conn = m.connect(host=ENV_MYSQL_HOST, user=ENV_MYSQL_USER, password=ENV_MYSQL_PASSWORD, database=ENV_MYSQL_NAME, port=ENV_MYSQL_PORT)
+        cur = conn.cursor()
+        cur.execute("SELECT id, rol_id, codigo_rol FROM home_empleado WHERE codigo_rol = %s AND activo = 1;", (codigo_repartidor,))
+        empleado = cur.fetchone()
+        
+        if empleado is None:
+            return JsonResponse({'error': 'Empleado no encontrado'}, status=404)
+        if empleado[1] != 4:
+            return JsonResponse({'error': 'El empleado no es un surtidor'}, status=403)
+        # Convertir el resultado a un diccionario
+        empleado = {
+            'id': empleado[0],
+            'rol_id': empleado[1],
+            'codigo_rol': empleado[2]
+        }
+        cur.close()
+        conn.close()
+
+        return JsonResponse(empleado, safe=False)
+    except Exception as e:
+        print(e)
+        return JsonResponse({'error': str(e)}, status=500)
+    
+@csrf_exempt
+def update_movimiento_repartidor(request):
+    try:
+        conn = m.connect(host=ENV_MYSQL_HOST, user=ENV_MYSQL_USER, password=ENV_MYSQL_PASSWORD, database=ENV_MYSQL_NAME, port=ENV_MYSQL_PORT)
+        cur = conn.cursor()
+        data = json.loads(request.body)
+        movimiento_id = data['movimiento_id']
+        codigo_repartidor = data['codigo_repartidor']
+
+        if not codigo_repartidor:
+            return JsonResponse({'error': 'Código de repartidor no proporcionado'}, status=500)
+        
+        cur.execute(""" SELECT id FROM home_empleado WHERE codigo_rol=%s AND activo = 1 AND rol_id=4;""", (codigo_repartidor,))
+        repartidor_id = cur.fetchone()
+
+        if not repartidor_id:
+            return JsonResponse({'error': 'Código de repartidor incorrecto'}, status=500)
+        
+        cur.execute("""
+            UPDATE home_movimiento SET 
+                fecha_final_repartidor = NOW()
+            WHERE id = %s;
+        """, (movimiento_id,))
+        conn.commit()
+        cur.close()
+        conn.close()
+
+        return JsonResponse({'message': 'Movimiento actualizado correctamente'}, safe=False)
+    except m.Error as e:
+        print(f"Error en update_movimiento_repartidor: {str(e)}")
         return JsonResponse({'error': f"MySQL error: {str(e)}"}, status=500)
     except Exception as e:
         print(f"Error en update_panel_repartidor_movimiento: {str(e)}")

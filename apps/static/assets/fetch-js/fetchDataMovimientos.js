@@ -55,6 +55,24 @@ async function fetchMonedas() {
         showMessage('Hubo un problema al obtener las monedas.', 'error');
     }
 }
+// Función para obtener monedas
+async function fetchSurtidores() {
+    try {
+        const response = await fetch('/get_surtidor', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        showMessage('Hubo un problema al obtener las monedas.', 'error');
+    }
+}
 
 // Función para obtener ventas
 async function fetchMovimientos(filters) {
@@ -73,24 +91,6 @@ async function fetchMovimientos(filters) {
         return data;
     } catch (error) {
         return { results: [], current_page: 1, num_pages: 1, has_previous: false, has_next: false };
-    }
-}
-
-async function fetchSurtidores() {
-    try {
-        const response = await fetch('/get_surtidores', {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-        if (!response.ok) {
-            throw new Error(`Error al obtener surtidores: ${response.statusText}`);
-        }
-        const surtidores = await response.json();
-        return surtidores;
-    } catch (error) {
-        showMessage('Hubo un problema al obtener los surtidores.', 'error');
     }
 }
 

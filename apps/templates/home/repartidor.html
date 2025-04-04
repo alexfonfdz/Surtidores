@@ -1,0 +1,411 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Entregas {% endblock %}
+{% block stylesheets %}
+<link rel="stylesheet" href="/static/assets/css/repartidor.css">
+{% endblock stylesheets %}
+
+{% block content %}
+<div id="loginModal" class="custom-modal">
+    <div class="custom-modal-content">
+        <div class="custom-modal-header">
+            <h5>Inicio de Sesión</h5>
+        </div>
+        <div class="custom-modal-body">
+            <form id="loginForm">
+                <label for="repartidorCodigo" class="form-label">Código de Repartidor:</label>
+                <input type="password" id="repartidorCodigo" class="form-input" placeholder="Ingrese su código"
+                    required>
+                <button type="button" id="loginButton" class="form-button">Iniciar Sesión</button>
+            </form>
+        </div>
+    </div>
+</div>
+<!-- Botón de Cerrar Sesión (Oculto por defecto) -->
+<div class="main-content" style="display: none;">
+    <div class="row justify-content-center align-items-center mb-3">
+        <button id="logoutButton" class="hidden-button pull-right" style="display: none;">Cerrar Sesión</button>
+    </div>
+    <!-- Contador de tiempo -->
+    <div class="row justify-content-center align-items-center mb-3">
+        <div class="col-md-12 text-center">
+            <h4 id="reloj" class="text-primary"></h4>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header card-header-primary d-flex justify-content-between align-items-center">
+                    <h4 class="card-title mb-0">Escanee Pedido/Remisión</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <input id="codigoMovimiento" type="text" class="form-control" focus>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header card-header-primary d-flex justify-content-between align-items-center">
+                    <h4 class="card-title mb-0">Pendientes de entregar a domicilio</h4>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive mt-3">
+                        <table class="table">
+                            <thead class="text-primary">
+                                <tr>
+                                    <th>Fecha y Hora</th>
+                                    <th>
+                                        <div class="custom-select-wrapper">
+                                            <select id="filterMovimiento" class="form-control custom-select">
+                                                <option value="Todos">Todos los movimientos</option>
+                                                <option value="Pedido">Pedidos</option>
+                                                <option value="Remisión">Remisiones</option>
+                                            </select>
+                                        </div>
+                                    </th>
+                                    <th>Folio</th>
+                                    <th>
+                                        <div class="custom-select-wrapper">
+                                            <select id="filterStatus" class="form-control custom-select">
+                                                <option value="Todos">Todos los Estados</option>
+                                                <option value="Pendiente">Pendientes</option>
+                                                <option value="Parcial">Parciales</option>
+                                                <option value="Vendido">Vendido</option>
+                                            </select>
+                                        </div>
+                                    </th>
+                                    <th>Cantidad Pedida</th>
+                                    <th>Cantidad Entregada</th>
+                                    <th>Importe</th>
+                                    <th>Entrega a domicilio</th>
+                                    <th>Ver</th>
+                                    <th style="width: 20%">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableMovimientosPendientes">
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pagination pull-right">
+                        <button id="prev-page" class="btn btn-primary" disabled>Anterior</button>
+                        <span id="page-info" class="mx-2"></span>
+                        <button id="next-page" class="btn btn-primary" disabled>Siguiente</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para ver venta -->
+<div class="modal fade" id="pedidoModal" tabindex="-1" role="dialog" aria-labelledby="ventaModalLabel"
+aria-hidden="true">
+<div class="modal-dialog modal-xl d-flex align-items-center justify-content-center" role="document">
+    <div class="modal-content w-75">
+        <div class="modal-header text-white">
+            <h5 class="modal-title" id="ventaModalLabel">Detalles del Movimiento</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true" class="text-white">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <h5 class="mb-3">Información del Movimiento</h5>
+            <form id="venta-form">
+                <input type="hidden" id="movimiento-id">
+                <div class="form-group">
+                    <label for="modal-tipo-movimiento" class="mb-2">Movimiento</label>
+                    <input type="text" class="form-control p-2" id="modal-tipo-movimiento" readonly>
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="modal-fecha-movimiento" class="mb-2">Fecha de Movimiento</label>
+                            <input type="text" class="form-control p-2" id="modal-fecha-movimiento"
+                                readonly>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="modal-folio" class="mb-2">Folio</label>
+                            <input type="text" class="form-control p-2" id="modal-folio" readonly>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group" id="folioRemision-group">
+                            <label for="modal-folioRemision" class="mb-2">Folio de Pedido
+                                Relacionado</label>
+                            <input type="text" class="form-control p-2" id="modal-folioRemision"
+                                readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="modal-condicion" class="mb-2">Condición</label>
+                            <input type="text" class="form-control p-2" id="modal-condicion" readonly>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="modal-almacen" class="mb-2">Almacén</label>
+                            <input type="text" class="form-control p-2" id="modal-almacen" readonly>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="modal-cliente" class="mb-2">Cliente</label>
+                            <input type="text" class="form-control p-2" id="modal-cliente" readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="modal-pagado" class="mb-2">Pagado</label>
+                            <input type="text" class="form-control p-2" id="modal-pagado" readonly>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="modal-metodo-pago" class="mb-2">Método de Pago</label>
+                            <input type="text" class="form-control p-2" id="modal-metodo-pago" readonly>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="modal-cantidad-pedida" class="mb-2">Cantidad Pedida</label>
+                            <input type="text" class="form-control p-2" id="modal-cantidad-pedida"
+                                readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="modal-importe-pedido" class="mb-2">Importe Pedido</label>
+                            <input type="text" class="form-control p-2" id="modal-importe-pedido"
+                                readonly>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="modal-iva-pedido" class="mb-2">IVA Pedido</label>
+                            <input type="text" class="form-control p-2" id="modal-iva-pedido" readonly>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="modal-descuento-pedido" class="mb-2">Descuento Pedido</label>
+                            <input type="text" class="form-control p-2" id="modal-descuento-pedido"
+                                readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="modal-total-pedido" class="mb-2">Total Pedido</label>
+                            <input type="text" class="form-control p-2" id="modal-total-pedido"
+                                readonly>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="modal-costo-venta" class="mb-2">Costo Venta</label>
+                            <input type="text" class="form-control p-2" id="modal-costo-venta" readonly>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="modal-utilidad" class="mb-2">Utilidad</label>
+                            <input type="text" class="form-control p-2" id="modal-utilidad" readonly>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="modal-moneda" class="mb-2">Moneda</label>
+                            <input type="text" class="form-control p-2" id="modal-moneda" readonly>
+                        </div>
+                    </div>
+                    <div class="col-md-4 form-check mt-3 d-flex justify-content-start">
+                        <input type="checkbox" class="form-checkbox" id="modal-cancelado" disabled>
+                        <label for="modal-cancelado" class="form-label">Cancelado</label>
+                    </div>
+                    <div class="col-md-4 form-check mt-3 align-items-center">
+                        <input type="checkbox" class="form-checkbox" id="modal-folioRemisiondo"
+                            disabled>
+                        <label for="modal-folioRemisiondo" class="form-label">Facturado</label>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 form-check mt-3 d-flex align-items-center">
+                        <input type="checkbox" class="form-checkbox" id="modal-devolucion" disabled>
+                        <label for="modal-devolucion" class="form-label">Devolución</label>
+                    </div>
+                    <div class="col-md-4 form-check mt-3 d-flex align-items-center">
+                        <input type="checkbox" class="form-checkbox" id="modal-solo-domicilio" disabled>
+                        <label for="modal-solo-domicilio" class="form-label">Solo Domicilio</label>
+                    </div>
+                    <div class="col-md-4 form-check mt-3 d-flex align-items-center">
+                        <input type="checkbox" class="form-checkbox" id="modal-cod" disabled>
+                        <label for="modal-cod" class="form-label">Cobro a Domicilio</label>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="modal-vendedor" class="mb-2">Vendedor</label>
+                            <input type="text" class="form-control p-2" id="modal-vendedor" readonly>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="modal-estado" class="mb-2">Estado</label>
+                            <input type="text" class="form-control p-2" id="modal-estado" readonly>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="modal-surtidor" class="mb-2">Surtidor</label>
+                            <input type="text" class="form-control p-2" id="modal-surtidor" readonly>
+                        </div>
+                    </div>
+                </div>
+                <h5 class="mt-3">Detalles del Movimiento</h5>
+                <div class="form-group">
+                    <input type="text" name="codigo-busqueda" id="codigo-busqueda-movimiento"
+                        class="form-control" placeholder="Buscar por código">
+                </div>
+                <div class="table-responsive mt-3">
+                    <table class="table">
+                        <thead class="text-primary">
+                            <tr>
+                                <th class="truncate">Código</th>
+                                <th class="truncate">Producto</th>
+                                <th class="truncate">UM</th>
+                                <th class="truncate">Factor UM</th>
+                                <th class="truncate">Cantidad</th>
+                                <th class="truncate">Precio Unitario</th>
+                                <th class="truncate">Importe</th>
+                                <th class="truncate">IVA</th>
+                                <th class="truncate">Descuento</th>
+                                <th class="truncate">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="movimiento-detalle-table-body">
+                            <!-- Detalles de la venta se cargarán aquí -->
+                            <tr class="no-detalles" style="display: none;">
+                                <td colspan="10" class="text-center">No se encuentran productos en esta
+                                    venta</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <h5 class="mt-3">Detalles de la Entrega</h5>
+                    <div class="table-responsive mt-3">
+                        <table class="table">
+                            <thead class="text-primary">
+                                <tr>
+                                    <th class="truncate">Código</th>
+                                    <th class="truncate">Producto</th>
+                                    <th class="truncate">UM</th>
+                                    <th class="truncate">Factor UM</th>
+                                    <th class="truncate">Cantidad Entregada</th>
+                                    <th class="truncate">Importe Entregado</th>
+                                    <th class="truncate">IVA Entregado</th>
+                                    <th class="truncate">Total Entregado</th>
+                                    <th class="truncate">Observaciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="entrega-detalle-table-body">
+                                <!-- Detalles de la entrega se cargarán aquí -->
+                                <tr class="no-entregas" style="display: none;">
+                                    <td colspan="9" class="text-center">No se encuentran entregas en
+                                        esta venta</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-primary" data-dismiss="modal">Cerrar</button>
+        </div>
+    </div>
+</div>
+</div>
+
+<div class="modal fade" id="EntregarModal" tabindex="-1" aria-labelledby="EntregarModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg d-flex align-items-center justify-content-center">
+        <div class="modal-content">
+            <!-- Header del Modal -->
+            <div class="modal-header text-white">
+                <h5 class="modal-title" id="EntregarModalLabel">Finalizar Entrega: <b id="EntregarModalFolio"></b></h5>
+            </div>
+            <!-- Cuerpo del Modal -->
+            <div class="modal-body">
+                <form id="EntregarModalForm">
+                    <input type="hidden" id="EntregarModal_movimientoId">
+                    <input type="hidden" id="EntregarModal_codigoRol">
+                    <div class="mb-3">
+                        <label for="codigoPanel" class="form-label">Código de Repartidor:</label>
+                        <input type="password" class="form-control" id="EntregarModal_codigoRepartidor" placeholder="Ejemplo: 12345" required>
+                    </div>
+                    <!-- Tabla de detalles de la entrega -->
+                    <div class="form-group" style="display: none;" id="entrega-details-group">
+                        <input type="text" name="codigo-busqueda" id="codigo-busqueda" class="form-control" placeholder="Buscar por código">
+                        <div class="table-responsive mt-3" id="EntregarModalTable">
+                            <table class="table">
+                                <thead class="text-primary">
+                                    <tr>
+                                        <th>Código del Producto</th>
+                                        <th>Producto</th>
+                                        <th>Cantidad Pedida</th>
+                                        <th>Cantidad Entregada</th>
+                                        <th>Observaciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="EntregarModalTableBody">
+                                    <!-- Detalles de la venta se cargarán aquí -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <!-- Footer del Modal -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary btn-block btn-sm" id="cancelar-entrega">Cancelar</button>
+                <button type="button" id="EntregarModalSave" class="btn btn-primary btn-block btn-sm" style="display: none;">Aceptar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast container -->
+<div class="toast-container">
+    <div id="toastMessage" class="toast">
+        <div class="toast-header">
+            <span id="toastMessageLabel"></span>
+            <button type="button" class="toast-close">&times;</button>
+        </div>
+        <div class="toast-body" id="toastMessageBody">
+            <!-- Mensaje se cargará aquí -->
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block javascripts %}
+<script src="/static/assets/html-js/loadDataRepartidor.js"></script>
+{% endblock javascripts %}

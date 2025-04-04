@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     const clearSearchButton = document.getElementById('clear-search');
     const editModalTableBody = document.getElementById('edit-cantidad-detalles');
     const almacenSelect = document.getElementById('almacen');
+    const surtidorSelect = document.getElementById('surtidor_select');
     const vendedoresSelect = document.getElementById('vendedor_id');
     const monedaSelect = document.getElementById('moneda');
 
@@ -21,6 +22,19 @@ document.addEventListener('DOMContentLoaded', async function () {
             almacenSelect.innerHTML = '<option value="">Cualquier almacén</option>'; // Opción por defecto
             almacenes.forEach(almacen => {
                 almacenSelect.innerHTML += `<option value="${almacen[0]}">${almacen[0]}</option>`;
+            });
+        }
+    }
+
+    // Función para llenar el select de surtidor
+    async function populateSurtidores() {
+        const surtidor = await fetchSurtidores();
+        console.log(surtidor);
+        if (surtidor || surtidor != []) {
+            surtidorSelect.innerHTML = '<option value="">Cualquier Surtidor</option>'; // Opción por defecto
+            surtidor.forEach(surtir => {
+                const nombreCompleto = `${surtir[1]} ${surtir[2]} ${surtir[3]}`;
+                surtidorSelect.innerHTML += `<option value="${surtir[0]}">${nombreCompleto}</option>`;
             });
         }
     }
@@ -55,6 +69,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         const moneda = document.getElementById('moneda').value;
         const soloDomicilio = document.getElementById('domicilio').checked;
         const cod = document.getElementById('cod').checked;
+        const surtidorId = document.getElementById('surtidor_select').value;
         const rangoFecha = document.getElementById('rango_fecha').value;
 
         let fechaInicioFormat = '';
@@ -81,6 +96,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             almacen: almacen,
             vendedor_id: vendedorId,
             moneda: moneda,
+            surtidor_id: surtidorId,
             domicilio: soloDomicilio ? 'si' : 'no',
             cod: cod ? 'si' : 'no',
             desde: fechaInicioFormat || '',
@@ -187,6 +203,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         document.getElementById('estado').value = '';
         document.getElementById('estatus').value = '';
         document.getElementById('tipo-movimiento').value = '';
+        document.getElementById('surtidor_select').value = '';
         fetchAndRenderMovimientos();
     });
 
@@ -678,5 +695,6 @@ document.addEventListener('DOMContentLoaded', async function () {
     // Llenar los selects al cargar la página
     await populateAlmacenes();
     await populateVendedores();
+    await populateSurtidores();
     await populateMonedas();
 });

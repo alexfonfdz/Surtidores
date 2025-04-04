@@ -1,6 +1,6 @@
 {% load static %}
 {% if request.user.is_authenticated %}
-    <div class="sidebar" data-color="purple" data-background-color="white">
+    <div class="sidebar" data-color="purple" data-background-color="white" style="z-index: 260;">
         <div class="logo" style="text-align: center;">
             <a rel="noopener noreferrer" href="/" class="simple-text logo-normal">
                 <img src="{% static 'assets/img/logo/logo.png' %}" alt="Logo" style="max-width: 70%; height: auto;">
@@ -38,6 +38,13 @@
                     </a>
                 </li>
                 {% endif %}
+                {% if request.user.rol_id == 1 or request.user.rol_id == 4 %}
+                <li class="nav-item {% if 'repartidor' in segment %} active {% endif %}">
+                    <a class="nav-link" href="/repartidor.html">
+                        <p>Repartidor</p>
+                    </a>
+                </li>
+                {% endif %}
                 {% if request.user.rol_id == 1 %}
                 <li class="nav-item {% if 'reporte-surtidores' in segment %} active {% endif %}">
                     <a class="nav-link" href="/reporte-surtidores.html">
@@ -45,7 +52,7 @@
                     </a>
                 </li>
                 {% endif %}
-                {% if request.user.rol_id == 1 %}
+                {% if request.user.rol_id == 1 or request.user.rol_id == 2 %}
                 <li class="nav-item {% if 'pedidos-remisiones' in segment %} active {% endif %}">
                     <a class="nav-link" href="/pedidos-remisiones.html">
                         <p>Pedidos y Remisiones</p>
