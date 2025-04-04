@@ -1,0 +1,169 @@
+.form-checkbox {
+    /* Elimino los estilos del navegador */
+    appearance: none;
+    /* Aplico mis estilos */
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    border: 2px solid #414AA8;
+    background-color: white;
+    position: relative;
+    vertical-align: middle;
+}
+
+.form-checkbox:checked {
+    background-color: #414AA8;
+}
+
+.form-checkbox:checked::after {
+    /* Poner palomita dentro de checkbox */
+    content: '✔';
+    color: white;
+    font-size: 1rem;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.form-group .bmd-label-static {
+    top: -1rem !important;
+}
+
+.form-label {
+    color: #414AA8;
+    display: flex;
+    align-items: center; /* Centra verticalmente el checkbox y el texto */
+    margin-left: 0.5rem;
+    margin-bottom: 0;
+}
+
+/* Aseguramos que el checkbox esté alineado al centro en su contenedor */
+.form-check {
+    display: flex;
+    align-items: center;
+}
+
+#modal-header {
+    background-color: #414AA8;
+}
+
+/* Truncar texto con puntos suspensivos */
+.truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Estilos para hacer el modal responsivo */
+.modal-dialog {
+    max-width: 50vw;
+    margin: 5vh auto;
+}
+
+.modal-content {
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh; /* Máxima altura del modal */
+}
+
+.modal-body {
+    flex: 1 1 auto;
+    overflow-y: auto; /* Permitir desplazamiento vertical */
+}
+
+.modal-footer {
+    flex-shrink: 0;
+}
+
+@media screen and (max-width: 992px) {
+    .modal-dialog {
+        max-width: 90vw;
+    }
+    .modal-dialog .modal-content {
+        height: 90vh;
+    }
+}
+
+.sortable {
+    cursor: pointer;
+}
+
+.sortable:after {
+    content: ' \25B2'; /* Up arrow */
+}
+
+.sortable.desc:after {
+    content: ' \25BC'; /* Down arrow */
+}
+
+.pagination {
+    justify-content: flex-end;
+}
+
+.padding-0 {
+    padding: 0 !important;
+}
+
+
+.toast-container {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 1060;
+}
+
+.toast {
+    display: block;
+    min-width: 250px;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    border-radius: 0.25rem;
+    box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.1);
+    color: #fff;
+}
+
+.toast-success {
+    background-color: #28a745;
+}
+
+.toast-error {
+    background-color: #dc3545;
+}
+
+.toast-info {
+    background-color: #007bff;
+}
+
+.toast-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+}
+
+.toast-body {
+    margin-top: 0.5rem;
+}
+
+.toast-close {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 1.25rem;
+    cursor: pointer;
+}
+
+.empleado-foto {
+    width: 10vw;
+    height: 10vw;
+    max-width: 150px;
+    max-height: 150px;
+    min-width: 80px;
+    min-height: 80px;
+    object-fit: cover;
+    margin-bottom: 2rem;
+    border: 2px solid #ccc;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}

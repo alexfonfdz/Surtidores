@@ -1,0 +1,384 @@
+.custom-select-wrapper {
+    position: relative;
+    display: inline-block;
+    width: 100%;  
+    padding: 0;                          
+}    
+
+.custom-select {
+    appearance: none;
+    width: 100%;
+    padding: 0.5rem 0rem;        
+    background-color: transparent;
+    font-size: 1rem;
+    color: #414AA8; 
+    cursor: pointer;        
+    color: #414AA8;
+    font-weight: unset;        
+    white-space: nowrap;
+    overflow: hidden;
+    min-width: 11rem; 
+    outline: none;  
+    width: 100%; 
+    /* border-bottom: 1px solid #414AA8;          */
+}
+
+.custom-select:focus {                
+    color: #414AA8;
+    border: none;        
+}
+
+.custom-select-wrapper::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 0rem;
+    width: 0;
+    height: 0;        
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 5px solid #414AA8;
+    transform: translateY(-50%) rotate(90deg); /* Flecha apuntando hacia la izquierda */
+    pointer-events: none;
+    transition: transform 0.3s ease;
+}
+
+.custom-select-wrapper.open::after {
+    transform: translateY(-50%) rotate(0deg);
+}
+
+.custom-select-wrapper select:focus + .custom-select-wrapper::after {
+    transform: translateY(-50%) rotate(0deg);
+}
+
+
+@media (max-width: 768px) {
+    .custom-select {            
+        padding: 0.5rem 0rem;
+    }        
+}
+
+
+    #ventaModal .form-checkbox {
+    appearance: none;
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    border: 2px solid #414AA8;
+    background-color: white;
+    position: relative;
+    vertical-align: middle;
+    margin-right: 0.5rem;
+}
+
+#ventaModal .form-checkbox:checked {
+    background-color: #414AA8;
+}
+
+#ventaModal .form-checkbox:checked::after {
+    content: '✔';
+    color: white;
+    font-size: 1rem;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+#ventaModal .form-checkbox:not(:checked) {
+    background-color: transparent;
+}
+
+#ventaModal .form-checkbox:not(:checked)::after {
+    content: 'X';
+    color: #414AA8;
+    font-size: 1rem;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+#ventaModal .form-check {
+    display: flex;
+    align-content: center;
+    flex-wrap: wrap;
+    margin-right: auto;
+    height: 5%;
+    margin-bottom: 1rem;
+}
+
+#ventaModal .form-label  {
+    color: #414AA8;
+    margin-bottom: 0;
+    display: flex;
+    align-items: center;
+}
+
+#ventaModal .form-check  {
+    display: flex;
+    align-items: center;
+    padding-left: 1.25rem;
+}
+
+.modal-header{
+    background-color: #414AA8;
+}
+
+#ventaModal .truncate {
+    white-space: normal;
+    word-wrap: break-word;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#ventaModal .modal {
+    overflow-y: auto;
+}
+
+#ventaModal body.modal-openl{
+    overflow: hidden;
+    position: fixed;
+}
+
+#ventaModal .modal-dialog {
+    max-width: 85vw;
+    margin: 5vh auto;
+}
+
+#ventaModal .modal-content {
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh;
+}
+
+#ventaModal .modal-body {
+    flex: 1 1 auto;
+    overflow-y: auto;
+}
+
+#ventaModal .modal-footer {
+    flex-shrink: 0;
+}
+
+#ventaModal .form-control:disabled, .form-control[readonly] {
+    background-color: #fff;
+    color: hsl(210, 8.8%, 31%);
+    opacity: 1;
+}
+
+#ventaModal .form-control:disabled, .form-control[readonly]::placeholder {
+    color: hsl(210, 8.8%, 31%);
+    opacity: 1;
+}
+
+.table-responsive #EntregarModalTable {
+    max-height: 300px;
+}
+
+#ventaModal .form-control:read-only {
+    cursor: not-allowed;
+    background-color: #f5f5f5;
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;        
+    margin: 0;
+}
+
+tr td:last-of-type button{
+    text-align: center;
+    width: 100%;
+}
+
+.form-control:disabled, .form-control[readonly] {
+    background-color: #fff;
+    color: hsl(210, 8.8%, 31%);
+    opacity: 1;
+}
+
+.form-control:disabled, .form-control[readonly]::placeholder {
+    color: hsl(210, 8.8%, 31%);
+    opacity: 1;
+}
+
+.form-control:disabled {
+    cursor: not-allowed;
+    background-color: #f5f5f5;
+}
+
+@media (max-width: 576px) {
+    .modal-footer {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .modal-footer .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+
+    .modal-footer .btn:last-child {
+        margin-bottom: 0;
+    }
+}
+
+.flatpickr .bmd-form-group {
+    width: 100%;
+}
+
+.form-control {
+    cursor: pointer;
+}
+
+.input-button {
+    cursor: pointer;
+    margin-left: 0.5rem;
+}
+
+.card-surtidor {
+    position: relative;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 16px;
+    margin: 16px;
+    text-align: center;
+    transition: transform 0.3s, opacity 0.3s;
+    cursor: pointer;
+    flex: 1 1 calc(25% - 32px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 300px; /* Define a fixed height for the card */
+}
+
+.card-title {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card-image {
+    flex: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card-image img {
+    border-radius: 50%;
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+}
+
+.card-details {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card-surtidor .info {
+    margin-top: 8px;
+}
+
+.card-surtidor .info p {
+    margin: 4px 0;
+}
+
+.card-surtidor:hover {
+    transform: scale(1.05);
+    opacity: 0.9;
+}
+
+
+#surtidores-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 2.5rem;
+}
+
+@media (max-width: 1200px) {
+    .card-surtidor {
+        flex: 1 1 calc(33.333% - 32px);
+    }
+}
+
+@media (max-width: 992px) {
+    .card-surtidor {
+        flex: 1 1 calc(50% - 32px);
+    }
+}
+
+@media (max-width: 768px) {
+    .card-surtidor {
+        flex: 1 1 calc(100% - 32px);
+    }
+}
+
+.toast-container {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 1060;
+}
+
+.toast {
+    display: none;
+    min-width: 250px;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    border-radius: 0.25rem;
+    box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.1);
+    color: #fff;
+}
+
+.toast-success {
+    background-color: #28a745;
+}
+
+.toast-error {
+    background-color: #dc3545;
+}
+
+.toast-info {
+    background-color: #007bff;
+}
+
+.toast-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+}
+
+.toast-body {
+    margin-top: 0.5rem;
+}
+
+.toast-close {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 1.25rem;
+    cursor: pointer;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+@media (max-width: 768px) {
+    .card-header {
+        flex-direction: row;
+        justify-content: space-between;
+    }
+}

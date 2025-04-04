@@ -1,0 +1,271 @@
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+select.form-control {
+    height: 2.5rem;
+    cursor: pointer;
+}
+
+.important-field .form-control.p-2 {
+    font-size: 1.15rem; 
+    padding: 0.75rem;
+}
+
+.important-field label {
+    font-size: 1.25rem;
+    font-weight: bold; 
+    padding-bottom: 1rem;
+}
+
+.form-checkbox {
+    appearance: none;
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    border: 2px solid #414AA8;
+    background-color: white;
+    position: relative;
+    vertical-align: middle;
+    margin-right: 0.5rem;
+}
+
+.form-checkbox:checked {
+    background-color: #414AA8;
+}
+
+.form-checkbox:checked::after {
+    content: '✔';
+    color: white;
+    font-size: 1rem;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.form-checkbox:not(:checked) {
+    background-color: transparent;
+}
+
+.form-checkbox:not(:checked)::after {
+    content: 'X';
+    color: #414AA8;
+    font-size: 1rem;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.form-check {
+    display: flex;
+    align-content: center;
+    flex-wrap: wrap;
+    margin-right: auto;
+    height: 5%;
+    margin-bottom: 1rem;
+}
+
+.form-label {
+    color: #414AA8;
+    margin-bottom: 0;
+    display: flex;
+    align-items: center;
+}
+
+.form-check {
+    display: flex;
+    align-items: center;
+    padding-left: 1.25rem;
+}
+
+.truncate {
+    white-space: normal;
+    word-wrap: break-word;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.form-control:disabled, .form-control[readonly] {
+    background-color: #fff;
+    color: hsl(210, 8.8%, 31%);
+    opacity: 1;
+}
+
+.form-control:disabled, .form-control[readonly]::placeholder {
+    color: hsl(210, 8.8%, 31%);
+    opacity: 1;
+}
+
+.sortable {
+    cursor: pointer;
+}
+
+.sortable:after {
+    content: '\25B2';
+}
+
+.sortable.desc:after {
+    content: '\25BC';
+}
+
+.input-button {
+    cursor: pointer;
+    margin-left: 0.5rem;
+}
+
+.bmd-form-group{
+    width: 100%;
+}
+
+.p-2 {
+    padding: 0.1rem !important;
+}
+
+.toast-container {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 1060;
+}
+
+.toast {
+    display: none;
+    min-width: 250px;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    border-radius: 0.25rem;
+    box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.1);
+    color: #fff;
+}
+
+.toast-success {
+    background-color: #28a745;
+}
+
+.toast-error {
+    background-color: #dc3545;
+}
+
+.toast-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+}
+
+.toast-body {
+    margin-top: 0.5rem;
+}
+
+.toast-close {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 1.25rem;
+    cursor: pointer;
+}
+
+#foto-surtidor {
+    border-radius: 50%;
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    margin-bottom: 16px;
+    margin-right: 8vw;
+    display: none;
+}
+
+.d-flex.align-items-center {
+    display: flex;
+    align-items: center;
+}
+
+.d-flex.flex-column {
+    display: flex;
+    flex-direction: column;
+}
+
+#search{
+    width: 100%;
+    height: 2.563rem;
+}
+
+/* Aseguramos que las columnas no se sobrepongan en pantallas más pequeñas */
+@media (max-width: 768px) {
+    .col-md-4 {
+        width: 100%;
+        margin-bottom: 15px;
+    }
+
+    .row {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+    }
+
+    .col-6 {
+        width: 50%;
+    }
+
+    .col-sm-12 {
+        width: 100%;
+    }
+}
+
+/* Asegurar que las tablas se ajusten a pantallas pequeñas */
+.table-sm {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Mejora la visibilidad en pantallas pequeñas */
+.modal-dialog {
+    max-width: 90%;
+}
+
+.modal-header h5 {
+    font-size: 1.25rem;
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+/* Ajuste para un buen espaciado en pantallas pequeñas */
+#movimiento-info .row {
+    margin-bottom: 10px;
+}
+
+#movimiento-info .col-6 {
+    padding-right: 15px;
+    padding-left: 15px;
+}
+
+#movimiento-info p {
+    font-size: 0.875rem;
+}
+
+/* Ajuste en el tamaño de la fuente en pantallas pequeñas */
+@media (max-width: 576px) {
+    .modal-body {
+        padding: 1rem;
+    }
+
+    .modal-header h5 {
+        font-size: 1.1rem;
+    }
+
+    .col-6 p {
+        font-size: 0.9rem;
+    }
+
+    .table-sm th,
+    .table-sm td {
+        font-size: 0.75rem;
+    }
+}

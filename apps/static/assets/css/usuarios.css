@@ -1,0 +1,172 @@
+.form-checkbox {
+    appearance: none;
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    border: 2px solid #414AA8;
+    background-color: white;
+    position: relative;
+    vertical-align: middle;
+}
+
+.form-checkbox:checked {
+    background-color: #414AA8;
+}
+
+.form-checkbox:checked::after {
+    content: '✔';
+    color: white;
+    font-size: 1rem;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.form-group .bmd-label-static {
+    top: -1rem !important;
+}
+
+.form-label {
+    color: #414AA8;
+    display: flex;
+    align-items: center;
+    margin-left: 0.5rem;
+    margin-bottom: 0;
+}
+
+.form-check {
+    display: flex;
+    align-items: center;
+}
+
+#modal-header {
+    background-color: #414AA8;
+}
+
+.truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.modal-dialog {
+    max-width: 50vw;
+    margin: 5vh auto;
+}
+
+.modal-content {
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh;
+}
+
+.modal-body {
+    flex: 1 1 auto;
+    overflow-y: auto;
+}
+
+.modal-footer {
+    flex-shrink: 0;
+}
+
+@media screen and (max-width: 992px) {
+    .modal-dialog {
+        max-width: 90vw;
+    }
+    .modal-dialog .modal-content {
+        height: 90vh;
+    }
+}
+
+select[disabled]{
+    background-color: #e9ecef !important;
+    color: #6c757d !important;
+    cursor: not-allowed !important;
+}
+
+.toast-container {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 1060;
+}
+
+.toast {
+    display: block;
+    min-width: 250px;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    border-radius: 0.25rem;
+    box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.1);
+    color: #fff;
+}
+
+.toast-success {
+    background-color: #28a745;
+}
+
+.toast-error {
+    background-color: #dc3545;
+}
+
+.toast-info {
+    background-color: #007bff;
+}
+
+.toast-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+}
+
+.toast-body {
+    margin-top: 0.5rem;
+}
+
+.toast-close {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 1.25rem;
+    cursor: pointer;
+}
+
+.align-items-center-custom {
+    align-items: center !important;
+}
+
+/* Ajustar altura del modal en pantallas pequeñas */
+@media (max-width: 962px) {
+    .modal-dialog {
+        max-width: 100%;
+        margin: 0;
+    }
+
+    .modal-content {
+        height: auto !important;
+        margin: 18px;
+    }
+
+    .modal-body {
+        padding: 15px;
+    }
+}
+
+.custom-checkbox {
+    transform: scale(1.05);
+    cursor: pointer;
+    display: flex;
+    align-items: center;    
+}
+
+.padding-left-8px {
+    padding-left: 8px !important;
+}
+
+#usuario-form {
+    margin-top: 1.5rem !important;
+    margin-bottom: 0.125rem !important;
+}

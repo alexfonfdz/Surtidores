@@ -1,0 +1,92 @@
+{% load static %}
+{% if request.user.is_authenticated %}
+    <div class="sidebar" data-color="purple" data-background-color="white">
+        <div class="logo" style="text-align: center;">
+            <a rel="noopener noreferrer" href="/" class="simple-text logo-normal">
+                <img src="{% static 'assets/img/logo/logo.png' %}" alt="Logo" style="max-width: 70%; height: auto;">
+            </a>
+        </div>
+        <div class="sidebar-wrapper">
+            <ul class="nav">
+                
+                {% if request.user.rol_id == 1 %}
+                <li class="nav-item {% if 'usuarios' in segment %} active {% endif %}">
+                    <a class="nav-link" href="/usuarios.html">
+                        <p>Usuarios</p>
+                    </a>
+                </li>                
+                
+                <li class="nav-item {% if 'empleados' in segment %} active {% endif %}">
+                    <a class="nav-link" href="/empleados.html">
+                        <p>Empleados</p>
+                    </a>
+                </li>
+                {% endif %}
+                
+                {% if request.user.rol_id == 1 or request.user.rol_id == 2 %}
+                <li class="nav-item {% if 'entregas' in segment %} active {% endif %}">
+                    <a class="nav-link" href="/entregas.html">
+                        <p>Entregas</p>
+                    </a>
+                </li>
+                {% endif %}
+
+                {% if request.user.rol_id == 1 or request.user.rol_id == 3 %}
+                <li class="nav-item {% if 'panel' in segment %} active {% endif %}">
+                    <a class="nav-link" href="/panel.html">
+                        <p>Panel</p>
+                    </a>
+                </li>
+                {% endif %}
+                {% if request.user.rol_id == 1 %}
+                <li class="nav-item {% if 'reporte-surtidores' in segment %} active {% endif %}">
+                    <a class="nav-link" href="/reporte-surtidores.html">
+                        <p>Reporte Surtidores</p>
+                    </a>
+                </li>
+                {% endif %}
+                {% if request.user.rol_id == 1 %}
+                <li class="nav-item {% if 'pedidos-remisiones' in segment %} active {% endif %}">
+                    <a class="nav-link" href="/pedidos-remisiones.html">
+                        <p>Pedidos y Remisiones</p>
+                    </a>
+                </li>
+                {% endif %}
+                <!-- 
+                <li class="nav-item {% if 'backorders' in segment %} active {% endif %}">
+                    <a class="nav-link" href="/backorders.html">
+                        <p>Backorders</p>
+                    </a>
+                </li> 
+                <li class="nav-item {% if 'traspasos' in segment %} active {% endif %}">
+                    <a class="nav-link" href="/traspasos.html">
+                        <p>Traspasos</p>
+                    </a>
+                </li>
+                <li class="nav-item {% if 'clientes_nuevos' in segment %} active {% endif %}">
+                    <a class="nav-link" href="/clientes_nuevos.html">
+                        <p>Clientes Nuevos</p>
+                    </a>
+                </li>
+                <li class="nav-item {% if 'clientes_ausentes' in segment %} active {% endif %}">
+                    <a class="nav-link" href="/clientes_ausentes.html">
+                        <p>Clientes Ausentes</p>
+                    </a>
+                </li>
+                <li class="nav-item {% if 'clientes_vencidos' in segment %} active {% endif %}">
+                    <a class="nav-link" href="/clientes_vencidos.html">
+                        <p>Clientes Vencidos</p>
+                    </a>
+                </li>
+                -->
+                <div class="dropdown-divider"></div>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'logout' %}" >
+                    <p>Cerrar Sesión</p>
+                    </a>
+                </li> 
+
+            </ul>
+        </div>
+    </div>
+{% endif %}

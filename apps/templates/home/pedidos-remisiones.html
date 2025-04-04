@@ -1,0 +1,379 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Pedidos y Remisiones {% endblock %}
+{% block stylesheets %}
+<link rel="stylesheet" href="/static/assets/css/pedidos-remisiones.css">
+{% endblock stylesheets %}
+{% block content %}
+<div class="row" id="main-content">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header card-header-primary">
+                <h4 class="card-title">Pedidos y Remisiones</h4>
+            </div>
+            <div class="card-body">
+                <form id="filter-form" method="get">
+                    <div class="row">
+                        <div class="col-md-12 d-flex justify-content-start">
+                            <div class="form-group form-check mt-3 d-flex align-items-center mr-3">
+                                <input type="checkbox" class="form-control form-checkbox" id="domicilio" name="domicilio" placeholder="Solo entregas a domicilio">
+                                <label class="form-label" for="domicilio">Solo entregas a domicilio</label>
+                            </div>
+                            <div class="form-group form-check mt-3 d-flex align-items-center">
+                                <input type="checkbox" class="form-control form-checkbox" id="cod" name="cod" placeholder="Solo COD">
+                                <label class="form-label" for="cod">Solo COD</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mt-3">
+                            <select title="almacen" name="almacen" id="almacen" class="form-control">
+                                <option value="" selected>Cualquier Almacén</option>
+                            </select>
+                        </div>
+                        <div class="flatpickr col-md-4 mt-3 d-flex align-items-center">
+                            <input type="text" id="rango_fecha" class="form-control" placeholder="Rango de fechas" data-input>
+                            <a class="input-button" title="Clear" data-clear>
+                                <i class="fas fa-times"></i>
+                            </a>
+                        </div>                         
+                        <div class="col-md-4 mt-3">
+                            <select title="Estado" name="estado" id="estado" class="form-control">
+                                <option value="" selected>Cualquier Estado</option>
+                                <option value="activo">Activos</option>
+                                <option value="cancelado">Cancelados</option>
+                                <option value="facturado">Facturados</option>
+                                <option value="por_facturar">Por Facturar</option>
+                                <option value="devolucion">Con devolución</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mt-3">
+                            <select title="Estatus" name="estatus" id="estatus" class="form-control">
+                                <option value="" selected>Cualquier Estatus</option>
+                                <option value="1">Pagado</option>
+                                <option value="0">No Pagado</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mt-3">
+                            <select title="Condición" name="condicion" id="condicion" class="form-control">
+                                <option value="" selected>Cualquier Condición</option>
+                                <option value="contado">Contado</option>
+                                <option value="credito">Crédito</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mt-3">
+                            <select title="Moneda" name="moneda" id="moneda" class="form-control">
+                                <option value="" selected>Cualquier Moneda</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mt-3">
+                            <select title="Vendedor" name="vendedor" id="vendedor_id" class="form-control">
+                                <option value="" selected>Cualquier Vendedor</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mt-3">
+                            <select title="Tipo de Movimiento" name="tipo_movimiento" id="tipo-movimiento" class="form-control">
+                                <option value="" selected>Todos los movimientos</option>
+                                <option value="remision">Remisiones</option>
+                                <option value="pedido">Pedidos</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mt-3">
+                            <input type="text" name="search" id="search" class="form-control" placeholder="Buscar por folio, cliente, sucursal">
+                        </div>
+                        <div class="col-md-2 mt-3">
+                            <button type="button" id="update-list" class="btn btn-primary w-100">Buscar</button>
+                        </div>
+                        <div class="col-md-2 mt-3">
+                            <button type="button" id="clear-search" class="btn btn-dark w-100">Limpiar</button>
+                        </div>
+                    </div>
+                </form>
+                <div class="table-responsive mt-3">
+                    <table class="table">
+                        <thead class="text-primary">
+                            <tr>
+                                <th class="truncate">Fecha</th>
+                                <th class="truncate">Tipo</th>
+                                <th class="truncate">Condición</th>
+                                <th class="truncate">Almacén</th>
+                                <th class="truncate">Folio</th>
+                                <th class="truncate">Factura</th>
+                                <th class="truncate">Cliente</th>
+                                <th class="truncate">Suc.</th>
+                                <th class="truncate">Cant. Pedida</th>
+                                <th class="truncate">Cant. Entregada</th>  
+                                <th class="truncate">Importe</th>
+                                <th class="truncate">Utilidad</th>
+                                <th class="truncate">Pagado</th>
+                                <th class="truncate">Entrega</th>
+                                <th class="truncate">Fecha Entrega</th>
+                                <th class="truncate">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="movimientos-table-body">
+                            <tr id="no-results">
+                                <td colspan="15" class="text-center">No hay resultados</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="pagination">
+                    <button id="prev-page" class="btn btn-primary" disabled>Anterior</button>
+                    <span id="page-info" class="mx-2"></span>
+                    <button id="next-page" class="btn btn-primary" disabled>Siguiente</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para ver detalles del movimiento -->
+<div class="modal fade" id="movimientoModal" tabindex="-1" role="dialog" aria-labelledby="movimientoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="movimientoModalLabel">Detalles del Movimiento</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="container-fluid">
+                    <div class="row">
+                        <!-- Primera columna: Información del movimiento -->
+                        <div class="col-md-4 col-sm-12">
+                            <h5>Información del Movimiento</h5>
+                            <div id="movimiento-info">
+                                <div class="row">
+                                    <div class="col-6"><strong>Empleado:</strong></div>
+                                    <div class="col-6"><span id="empleado-info"></span></div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-6"><strong>Fecha Movimiento:</strong></div>
+                                    <div class="col-6"><span id="fecha-movimiento"></span></div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-6"><strong>Condición:</strong></div>
+                                    <div class="col-6"><span id="condicion2"></span></div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-6"><strong>Almacén:</strong></div>
+                                    <div class="col-6"><span id="almacen2"></span></div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-6"><strong>Folio:</strong></div>
+                                    <div class="col-6"><span id="folio"></span></div>
+                                </div>
+                                <div id="folio-pedido-div" class="row">
+                                    <div class="col-6"><strong>Folio Pedido:</strong><span id="folio-pedido" style="padding-left: 10rem;"></span></div>
+                                    <div class="col-6"></div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-6"><strong>Cliente:</strong></div>
+                                    <div class="col-6"><span id="cliente"></span></div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-6"><strong>Sucursal:</strong></div>
+                                    <div class="col-6"><span id="sucursal"></span></div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-6"><strong>Pagado:</strong></div>
+                                    <div class="col-6"><span id="pagado"></span></div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-6"><strong>Método de Pago:</strong></div>
+                                    <div class="col-6"><span id="metodo-pago"></span></div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-6"><strong>Cantidad Pedida:</strong></div>
+                                    <div class="col-6"><span id="cantidad-pedida"></span></div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-6"><strong>Importe Pedido:</strong></div>
+                                    <div class="col-6"><span id="importe-pedido"></span></div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-6"><strong>IVA Pedido:</strong></div>
+                                    <div class="col-6"><span id="iva-pedido"></span></div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-6"><strong>Descuento Pedido:</strong></div>
+                                    <div class="col-6"><span id="descuento-pedido"></span></div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-6"><strong>Total Pedido:</strong></div>
+                                    <div class="col-6"><span id="total-pedido"></span></div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-6"><strong>Utilidad:</strong></div>
+                                    <div class="col-6"><span id="utilidad"></span></div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-6"><strong>Moneda:</strong></div>
+                                    <div class="col-6"><span id="moneda2"></span></div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-6"><strong>Tipo Movimiento:</strong></div>
+                                    <div class="col-6"><span id="tipo_movimiento"></span></div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-6"><strong>Cancelado:</strong></div>
+                                    <div class="col-6"><span id="cancelado"></span></div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-6"><strong>Facturado:</strong></div>
+                                    <div class="col-6"><span id="facturado"></span></div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-6"><strong>Devolución:</strong></div>
+                                    <div class="col-6"><span id="devolucion"></span></div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-6"><strong>Solo Domicilio:</strong></div>
+                                    <div class="col-6"><span id="solo-domicilio"></span></div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-6"><strong>COD:</strong></div>
+                                    <div class="col-6"><span id="cod2"></span></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Segunda columna: Detalles del pedido -->
+                        <div class="col-md-4">
+                            <h5>Detalles del Pedido</h5>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Código Producto</th>
+                                            <th>Producto</th>
+                                            <th>Unidad Medida</th>
+                                            <th>Cantidad Pedida</th>
+                                            <th>Factor UM</th>
+                                            <th>Precio Unitario</th>
+                                            <th>Importe Pedido</th>
+                                            <th>IVA Pedido</th>
+                                            <th>Descuento Pedido</th>
+                                            <th>Total Pedido</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="pedido-detalles"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Tercera columna: Detalles de la entrega y personal -->
+                        <div class="col-md-4">
+                            <h5>Detalles de la Entrega</h5>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Código Producto</th>
+                                            <th>Producto</th>
+                                            <th>Unidad Medida</th>
+                                            <th>Factor UM</th>
+                                            <th>Cantidad Entregada</th>
+                                            <th>Importe Entregado</th>
+                                            <th>IVA Entregado</th>
+                                            <th>Total Entregado</th>
+                                            <th>Observación</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="entrega-detalles"></tbody>
+                                </table>
+                            </div>
+
+                            <h5>Información del Personal</h5>
+                            <div id="personal-info">
+                                <p><strong>Surtidor:</strong> <span id="surtidor-info"></span></p>
+                                <div id="cosas-remision">
+                                    <p><strong>Panel:</strong> <span id="panel-info"></span></p>
+                                    <p><strong>Repartidor:</strong> <span id="repartidor-info"></span></p>
+                                </div>
+                                <p><strong>Comienzo de surtido:</strong> <span id="comienzo-surtido"></span></p>
+                                <p><strong>Finalizar Entrega:</strong> <span id="entrega-surtido"></span></p>
+                                <div id="cosas-remision2">
+                                    <p><strong>Entrega de Panel a Repartidor:</strong> <span id="panel-repartidor"></span></p>
+                                    <p><strong>Entrega Repartidor:</strong> <span id="entrega-repartidor"></span></p>
+                                </div>
+                                <!-- Botón para abrir el modal de edición -->
+                                <button id="edit-movimiento" class="btn btn-warning btn-sm mt-3">Editar Cantidad Entregada</button>  
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    <!-- Modal Entregar -->
+    <div class="modal fade" id="editCantidadModal" tabindex="-1" aria-labelledby="EntregarModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg d-flex justify-content-center align-items-center">
+            <div class="modal-content w-50">
+                <!-- Header del Modal -->
+                <div class="modal-header text-white bg-primary">
+                    <h5 class="modal-title" id="EntregarModalLabel">Realizar Modificación de Entrega <b id="EditarModalFolio"></b></h5>
+                </div>
+                <!-- Cuerpo del Modal -->
+                <div class="modal-body">
+                    <form id="EntregarModalForm">
+                        <input type="hidden" id="EntregarModal_movimientoId">
+                        <input type="hidden" id="EntregarModal_codigoRol">
+                        <input type="hidden" id="EntregarModal_surtidor">
+                        <div class="mb-3">
+                            <label for="codigoSurtidor" class="form-label">Código de Surtidor:</label>
+                            <input type="password" class="form-control" id="EntregarModal_codigoSurtidor" placeholder="Ejemplo: 12345" required>
+                        </div>
+                        <!-- Ocultar tabla hasta dar clic a un tipo de entrega -->
+                        <div class="form-group">
+                            <input type="text" name="codigo-busqueda" id="codigo-busqueda" class="form-control" placeholder="Buscar por código">
+                        </div>
+                        <div class="table-responsive mt-3" id="EntregarModalTable" style="display: none;">
+                            <table class="table">
+                                <thead class="text-primary">
+                                    <tr>
+                                        <th>Código del Producto</th>
+                                        <th>Producto</th>
+                                        <th>Cantidad Pedida</th>
+                                        <th>Cantidad Entregada</th>
+                                        <th>Observaciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="edit-cantidad-detalles">
+                                    <!-- Detalles de la venta se cargarán aquí -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </form>
+                </div>
+                <!-- Footer del Modal -->
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-block btn-sm" id="cancelar-entrega">Cancelar</button>
+                    <button type="button" id="EntregarModalSaveEditar" class="btn btn-primary btn-block btn-sm">Editar</button>
+                    <button type="button" id="EntregarModalSave" class="btn btn-primary btn-block btn-sm" style="display: none;">Aceptar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+<!-- Toast container -->
+<div class="toast-container">
+    <div id="toastMessage" class="toast">
+        <div class="toast-header">
+            <span id="toastMessageLabel"></span>
+            <button type="button" class="toast-close">&times;</button>
+        </div>
+        <div class="toast-body" id="toastMessageBody">
+            <!-- Mensaje se cargará aquí -->
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block javascripts %}
+<script src="/static/assets/html-js/loadDataMovimientos.js"></script>
+{% endblock javascripts %}

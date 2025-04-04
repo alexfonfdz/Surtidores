@@ -1,0 +1,207 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Empleados {% endblock %}
+{% block stylesheets %}
+<link rel="stylesheet" href="/static/assets/css/empleados.css">
+{% endblock stylesheets %}
+{% block content %}
+<div class="row" id="main-content">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header card-header-primary">
+                <h4 class="card-title">Administrador de Empleados</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col d-flex justify-content-end">
+                        <button type="button" id="update-empleados" class="btn btn-primary mb-3">Actualizar Lista de Empleados</button>
+                    </div>
+                </div>    
+                <form id="filter-form" method="get">
+                    <div class="row">
+                        <!-- Primera columna -->
+                        <div class="col-lg-8">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <input type="text" name="search" id="search" class="form-control" placeholder="Buscar por nombre y/o apellidos">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <input type="text" name="clave_empleado" id="clave_empleado" class="form-control" placeholder="Buscar por clave de empleado">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <input type="text" name="codigo_rol" id="codigo_rol" class="form-control" placeholder="Buscar por código de rol">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <select name="rol" id="rol" class="form-control">
+                                        <option value="">Todos los roles</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <select name="activo" id="activo" class="form-control">
+                                        <option value="">Todos</option>
+                                        <option value="1">Activos</option>
+                                        <option value="0">Inactivos</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                
+                        <!-- Segunda columna -->
+                        <div class="col-lg-4 d-flex align-items-center justify-content-lg-center justify-content-end">
+                            <button type="button" id="clear-search" class="btn btn-dark w-50">Limpiar</button>
+                        </div>
+                    </div>
+                </form>                <div class="table-responsive mt-3">
+                    <table class="table">
+                        <thead class="text-primary">
+                            <tr>
+                                <th class="truncate" data-order-by="nombre">Nombre</th>
+                                <th class="truncate" data-order-by="apellido_paterno">Apellido Paterno</th>
+                                <th class="truncate" data-order-by="apellido_materno">Apellido Materno</th>
+                                <th class="truncate text-center" data-order-by="clave_empleado">Clave Empleado</th>
+                                <th class="truncate text-center" data-order-by="rol">Rol</th>
+                                <th class="truncate text-center" data-order-by="codigo_rol">Codigo Rol</th>
+                                <th class="truncate text-center" data-order-by="activo">Activo</th>
+                                <th class="truncate text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="empleados-table-body">
+                            <tr id="no-results" style="display: none;">
+                                <td colspan="6" class="text-center">No hay resultados</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="pagination">
+                    <button id="prev-page" class="btn btn-primary" disabled>Anterior</button>
+                    <span id="page-info" class="mx-2"></span>
+                    <button id="next-page" class="btn btn-primary" disabled>Siguiente</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para ver y editar empleado -->
+<div class="modal fade" id="empleadoModal" tabindex="-1" role="dialog" aria-labelledby="empleadoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header text-white" id="modal-header">
+                <h5 class="modal-title" id="empleadoModalLabel">Detalles del Empleado</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true" class="text-white">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Cargar la foto del empleado -->
+                <div class="text-center">
+                    <img id="empleado-foto" src="/static/assets/img/faces/default.png" alt="Foto de empleado" class="rounded-circle empleado-foto">
+                </div>
+                <form id="empleado-form">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="modal-nombre" class="mb-2">Nombre</label>
+                                <input type="text" class="form-control p-2" id="modal-nombre" readonly>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="modal-apellido-paterno" class="mb-2">Apellido Paterno</label>
+                                <input type="text" class="form-control p-2" id="modal-apellido-paterno" readonly>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="modal-apellido-materno" class="mb-2">Apellido Materno</label>
+                                <input type="text" class="form-control p-2" id="modal-apellido-materno" readonly>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="modal-clave-empleado" class="mb-2">Clave Empleado</label>
+                                <input type="text" class="form-control p-2" id="modal-clave-empleado" readonly>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="modal-curp" class="mb-2">CURP</label>
+                                <input type="text" class="form-control p-2" id="modal-curp" readonly>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="modal-rfc" class="mb-2">RFC</label>
+                                <input type="text" class="form-control p-2" id="modal-rfc" readonly>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="modal-email" class="mb-2">Email</label>
+                                <input type="text" class="form-control p-2" id="modal-email" readonly>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="modal-celular" class="mb-2">Celular</label>
+                                <input type="text" class="form-control p-2" id="modal-celular" readonly>
+                            </div>
+                        </div>
+                    </div>                    
+                    <div class="row my-1">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="modal-rol" class="mb-0">Rol</label>
+                                <select class="form-control padding-0 mb-4" id="modal-rol">
+                                    <!-- Los roles se agregan dinámicamente -->
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6 d-flex justify-content-center align-items-center">
+                            <div class="form-group w-100 text-center">
+                                <label for="modal-codigo-rol" class="mb-2">Código de Rol</label>
+                                <input type="text" class="form-control p-2" id="modal-codigo-rol" readonly>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="modal-fecha-nacimiento" class="mb-2">Fecha Nacimiento</label>
+                                <input type="text" class="form-control p-2" id="modal-fecha-nacimiento" readonly>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="modal-activo" class="mb-2">Activo</label>
+                                <input type="text" class="form-control p-2" id="modal-activo" readonly>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="save-changes">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast para mensajes de alerta -->
+<div class="toast-container"></div>
+{% endblock content %}
+
+{% block javascripts %}
+    <script src="/static/assets/html-js/loadDataEmpleados.js"></script>
+{% endblock javascripts %}

@@ -1,0 +1,66 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Inicio de Sesión {% endblock %} 
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+{% load static %}
+<br><br>
+<div class="d-flex justify-content-center align-items-center vh-100">
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header card-header-primary">
+            <div class="logo" style="text-align: center;">
+                <a rel="noopener noreferrer" href="/" class="simple-text logo-normal">
+                    <img src="{% static 'assets/img/logo/logo.png' %}" alt="Logo" style="max-width: 45%; height: auto;">
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+
+            <h6 class="card-category">
+                {% if msg %}
+                    <span class="text-danger">{{ msg | safe }}</span>
+                {% endif %}  
+            </h6>
+          
+            <br />
+
+            <div class="d-flex justify-content-center align-items-center vh-100">
+                <form role="form" method="post" action="" class="w-50">
+                    {% csrf_token %}
+            
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="form-group">
+                                {{ form.username }}
+                            </div>
+                        </div>
+                    </div>
+            
+                    <br />
+            
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="form-group">
+                                {{ form.password }}
+                            </div>
+                        </div>
+                    </div>
+            
+                    <br />
+            
+                    <button type="submit" name="login" class="btn btn-primary pull-right">Iniciar Sesión</button>
+                </form>
+            </div>
+        </div>
+      </div>
+    </div>
+</div>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}{% endblock javascripts %}
