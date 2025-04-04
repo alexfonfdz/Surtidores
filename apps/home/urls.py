@@ -52,8 +52,11 @@ urlpatterns = [
 
     # ================ SURTIDORES ================= #
     path('get_reporte_surtidores', views.get_reporte_surtidores, name='get_reporte_surtidores'),
+    path('get_reporte_repartidores', views.get_reporte_repartidores, name='get_reporte_repartidores'),
     path('get_movimientos_surtidor', views.get_movimientos_surtidor, name='get_movimientos_surtidor'),
+    path('get_movimientos_repartidor', views.get_movimientos_repartidor, name='get_movimientos_repartidor'),
     path('get_movimientodetalle_surtidor', views.get_movimientodetalle_surtidor, name='get_movimientodetalle_surtidor'),
+    path('get_movimientodetalle_repartidor', views.get_movimientodetalle_repartidor, name='get_movimientodetalle_repartidor'),
     path('get_surtidores_del_dia', views.get_surtidores_del_dia, name='get_surtidores_del_dia'),        
     path('proceso_surtir', views.proceso_surtir, name='proceso_surtir'),
     

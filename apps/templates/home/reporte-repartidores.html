@@ -1,0 +1,161 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Reporte Repartidores {% endblock %}
+{% block stylesheets %}
+<link rel="stylesheet" href="/static/assets/css/reporte-repartidores.css">
+{% endblock stylesheets %}
+{% block content %}
+<div class="row" id="main-content">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header card-header-primary">
+                <h4 class="card-title">Reporte Repartidores</h4>
+            </div>
+            <div class="card-body">
+                <form id="filter-form" method="get">
+                    <div class="row align-items-center">
+                        <div class="col-md-4 mt-3">
+                            <input type="text" name="search" id="search" class="form-control" placeholder="Buscar por nombre, apellido, código">
+                        </div>
+                        <div class="flatpickr col-md-4 mt-3 d-flex align-items-center">
+                            <input type="text" id="rango_fecha" class="form-control" placeholder="Rango de fechas" data-input>
+                            <a class="input-button" title="Clear" data-clear>
+                                <i class="fas fa-times"></i>
+                            </a>
+                        </div>
+                        <div class="col-md-4 mt-3">
+                            <select title="year" name="year" id="year" class="form-control">
+                                <option value="" selected>Todos los años</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mt-3">
+                            <select title="activo" name="activo" id="activo" class="form-control">
+                                <option value="" selected>Todos los repartidores</option>
+                                <option value="1">Activos</option>
+                                <option value="0">Inactivos</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mt-3">
+                            <select title="repartidor_sin_clave" name="repartidor_sin_clave" id="repartidor_sin_clave" class="form-control">
+                                <option value="" selected>Todos con/sin clave</option>
+                                <option value="con_clave">Con clave</option>
+                                <option value="sin_clave">Sin clave</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 mt-3">
+                            <button type="button" id="update-list" class="btn btn-primary w-100">Buscar</button>
+                        </div>
+                        <div class="col-md-2 mt-3">
+                            <button type="button" id="clear-search" class="btn btn-dark w-100">Limpiar</button>
+                        </div>
+                    </div>
+                </form>
+                <div class="row mt-3" id="repartidores-container">
+                    <!-- Tarjetas de repartidores se cargarán aquí -->
+                </div>
+                <div class="pagination">
+                    <button id="prev-page" class="btn btn-primary" disabled>Anterior</button>
+                    <span id="page-info" class="mx-2"></span>
+                    <button id="next-page" class="btn btn-primary" disabled>Siguiente</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="repartidorModal" tabindex="-1" role="dialog" aria-labelledby="repartidorModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header text-white" id="modal-header">
+                <h5 class="modal-title" id="repartidorModalLabel">Resumen del repartidor</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true" class="text-white">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Sección 1: Información del repartidor y movimientos -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5 class="mb-3">Información del Surtidor</h5>
+                        <div id="repartidor-info">
+                            <!-- Información del repartidor se cargará aquí -->
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h5 class="mb-3">Entrega del Surtidor</h5>
+                        <div class="table-responsive mt-3 movimientos-repartidor-table">
+                            <table class="table">
+                                <thead class="text-primary">
+                                    <tr>
+                                        <th class="truncate">Fecha Movimiento</th>
+                                        <th class="truncate">Condición</th>
+                                        <th class="truncate">Almacén</th>
+                                        <th class="truncate">Folio</th>
+                                        <th class="truncate">Cliente</th>
+                                        <th class="truncate">Sucursal</th>
+                                        <th class="truncate">Cantidad Pedida</th>
+                                        <th class="truncate">Cantidad Entregada</th>
+                                        <th class="truncate">Importe Entregado</th>
+                                        <th class="truncate">IVA Entregado</th>
+                                        <th class="truncate">Descuento Entregado</th>
+                                        <th class="truncate">Total Entregado</th>
+                                        <th class="truncate">Fecha Entrega</th>
+                                        <th class="truncate">Tiempo de Entrega</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="movimientos-repartidor-table-body">
+                                    <!-- movimientos del repartidor se cargarán aquí -->
+                                    <tr class="no-movimientos" style="display: none;">
+                                        <td colspan="11" class="text-center">No se encuentran movimientos para este repartidor</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <!-- Sección 2: Detalles de la movimiento seleccionada -->
+                <div class="row mt-4">
+                    <div class="col-md-12">
+                        <h5 class="mb-3">Detalles de la Entrega</h5>
+                        <div class="form-group">
+                            <input type="text" name="codigo-busqueda" id="codigo-busqueda" class="form-control" placeholder="Buscar por código">
+                        </div>
+                        <div class="table-responsive mt-3">
+                            <table class="table">
+                                <thead class="text-primary">
+                                    <tr>
+                                        <th class="truncate">Fecha Entrega</th>
+                                        <th class="truncate">Código</th>
+                                        <th class="truncate">Producto</th>
+                                        <th class="truncate">Factor UM</th>
+                                        <th class="truncate">Cantidad Pedida</th>
+                                        <th class="truncate">Cantidad Entregada</th>
+                                        <th class="truncate">UM</th>
+                                        <th class="truncate">Importe</th>
+                                        <th class="truncate">IVA</th>
+                                        <th class="truncate">Descuento</th>
+                                        <th class="truncate">Total</th>
+                                        <th class="truncate">Observaciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="movimiento-detalle-table-body">
+                                    <!-- Detalles de la movimiento se cargarán aquí -->
+                                    <tr class="no-movimientos-detalle">
+                                        <td colspan="10" class="text-center">Da clic en una movimiento para ver su detalle</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+{% block javascripts %}
+<script src="/static/assets/html-js/loadDataReporteRepartidor.js"></script>
+{% endblock javascripts %}

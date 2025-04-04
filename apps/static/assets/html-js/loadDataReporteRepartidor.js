@@ -3,16 +3,16 @@ let currentOrderDir = 'asc';
 
 document.addEventListener('DOMContentLoaded', async function() {
     const filterForm = document.getElementById('filter-form');
-    const surtidoresContainer = document.getElementById('surtidores-container');
+    const repartidoresContainer = document.getElementById('repartidores-container');
     const prevPageButton = document.getElementById('prev-page');
     const nextPageButton = document.getElementById('next-page');
     const pageInfo = document.getElementById('page-info');
     const updateListButton = document.getElementById('update-list');
     const noResultsRow = document.getElementById('no-results');
     const clearSearchButton = document.getElementById('clear-search');
-    const surtidorModal = document.getElementById('surtidorModal');
-    const surtidorInfo = document.getElementById('surtidor-info');
-    const movimientosSurtidorTableBody = document.getElementById('movimientos-surtidor-table-body');
+    const repartidorModal = document.getElementById('repartidorModal');
+    const repartidorInfo = document.getElementById('repartidor-info');
+    const movimientosSurtidorTableBody = document.getElementById('movimientos-repartidor-table-body');
     const inputFecha = document.getElementById('rango_fecha');
     const movimientoDetalleTableBody = document.getElementById('movimiento-detalle-table-body');
     const yearSelect = document.getElementById('year');
@@ -120,7 +120,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         const search = document.getElementById('search').value;
         const rangoFecha = document.getElementById('rango_fecha').value;
         const activo = document.getElementById('activo').value;
-        const surtidorSinClave = document.getElementById('surtidor_sin_clave').value;
+        const repartidorSinClave = document.getElementById('repartidor_sin_clave').value;
 
         let fechaInicioFormat = '';
         let fechaFinFormat = '';
@@ -143,78 +143,78 @@ document.addEventListener('DOMContentLoaded', async function() {
             hasta: fechaFinFormat || '',
             year: yearSelect.value || '',
             activo: activo,
-            surtidor_sin_clave: surtidorSinClave,
+            repartidor_sin_clave: repartidorSinClave,
             page: page,
             page_size: 10,
             order_by: currentOrderBy,
             order_dir: currentOrderDir
         };
 
-        const data = await fetchReporteSurtidores(filters);
-        surtidoresContainer.innerHTML = '';
+        const data = await fetchReporteRepartidores(filters);
+        repartidoresContainer.innerHTML = '';
         if (data.results.length === 0) {
-            surtidoresContainer.innerHTML = '<div class="col-md-12 text-center">No hay resultados</div>';
+            repartidoresContainer.innerHTML = '<div class="col-md-12 text-center">No hay resultados</div>';
         } else {
-            let surtidorCount = 0;
+            let repartidorCount = 0;
             let totalSurtidores = 0;
             let mayorSurtidor = 0;
-            data.results.forEach(surtidor => {
+            data.results.forEach(repartidor => {
                 const card = document.createElement('div');
-                card.className = 'col-md-3 card-surtidor';
-                const fotoSurtidor = surtidor.empleado_imagen ? 'https://storage.googleapis.com/at_private_storage/' + surtidor.empleado_imagen : '/static/assets/img/faces/default.png';
+                card.className = 'col-md-3 card-repartidor';
+                const fotoSurtidor = repartidor.empleado_imagen ? 'https://storage.googleapis.com/at_private_storage/' + repartidor.empleado_imagen : '/static/assets/img/faces/default.png';
 
                 card.innerHTML = `
                     <div class="card-title">
-                        <h5 class='truncate' title='${surtidor.nombre} ${surtidor.apellido_paterno} ${surtidor.apellido_materno}'>
-                            ${surtidor.nombre} ${surtidor.apellido_paterno} ${surtidor.apellido_materno}
+                        <h5 class='truncate' title='${repartidor.nombre} ${repartidor.apellido_paterno} ${repartidor.apellido_materno}'>
+                            ${repartidor.nombre} ${repartidor.apellido_paterno} ${repartidor.apellido_materno}
                         </h5>
                     </div>
                     <div class="card-image">
-                        <img src="${fotoSurtidor}" alt="Foto de ${surtidor.nombre}">
+                        <img src="${fotoSurtidor}" alt="Foto de ${repartidor.nombre}">
                     </div>
                     <div class="card-details">
                         <div class="info">
-                            <p>Piezas: ${(surtidor.piezas || 0).toFixed(2)}</p>
-                            <p>Surtidos: ${surtidor.surtidos}</p>
+                            <p>Piezas: ${(repartidor.piezas || 0).toFixed(2)}</p>
+                            <p>Repartidos: ${repartidor.repartidos}</p>
                         </div>
                     </div>
                     <div class="overlay">Clic para más información</div>
                 `;
                 card.addEventListener('click', async function() {
-                    await loadSurtidorDetails(surtidor.id);
-                    $('#surtidorModal').modal('show');
+                    await loadSurtidorDetails(repartidor.id);
+                    $('#repartidorModal').modal('show');
                 });
-                surtidoresContainer.appendChild(card);
-                if(surtidor.surtidos > 0){
-                    surtidorCount += surtidor.surtidos
+                repartidoresContainer.appendChild(card);
+                if(repartidor.repartidos > 0){
+                    repartidorCount += repartidor.repartidos
                     totalSurtidores += 1
-                    if(surtidor.surtidos > mayorSurtidor){
-                        mayorSurtidor = surtidor.surtidos
+                    if(repartidor.repartidos > mayorSurtidor){
+                        mayorSurtidor = repartidor.repartidos
                     }
                 }
             });
-            //Surtidor mas surtido color verde, menos surtido color rojo, promedio color amarillo, si no tiene surtidos color gris
-            let promedio = surtidorCount / totalSurtidores
-            let cards = document.querySelectorAll('.card-surtidor')
+            //Surtidor mas surtido color verde, menos surtido color rojo, promedio color amarillo, si no tiene repartidos color gris
+            let promedio = repartidorCount / totalSurtidores
+            let cards = document.querySelectorAll('.card-repartidor')
             cards.forEach(card => {
                 let info = card.querySelector('.info');
-                let surtidos = parseInt(info.querySelector('p:nth-child(2)').textContent.split(' ')[1]);
-                if (surtidos == mayorSurtidor) {
+                let repartidos = parseInt(info.querySelector('p:nth-child(2)').textContent.split(' ')[1]);
+                if (repartidos == mayorSurtidor) {
                     card.classList.add('green');
                     let icon = document.createElement('div');
                     icon.className = 'icon';
                     card.appendChild(icon);
-                } else if (surtidos == 0) {
+                } else if (repartidos == 0) {
                     card.classList.add('grey');
                     let icon = document.createElement('div');
                     icon.className = 'icon';
                     card.appendChild(icon);
-                } else if (surtidos < promedio) {
+                } else if (repartidos < promedio) {
                     card.classList.add('red');
                     let icon = document.createElement('div');
                     icon.className = 'icon';
                     card.appendChild(icon);
-                } else if (surtidos >= promedio) {
+                } else if (repartidos >= promedio) {
                     card.classList.add('yellow');
                     let icon = document.createElement('div');
                     icon.className = 'icon';
@@ -232,11 +232,11 @@ document.addEventListener('DOMContentLoaded', async function() {
         currentPage = data.current_page;
     }
 
-    async function loadSurtidorDetails(surtidorId) {
+    async function loadSurtidorDetails(repartidorId) {
         const search = document.getElementById('search').value;
         const rangoFecha = document.getElementById('rango_fecha').value;
         const activo = document.getElementById('activo').value;
-        const surtidorSinClave = document.getElementById('surtidor_sin_clave').value;
+        const repartidorSinClave = document.getElementById('repartidor_sin_clave').value;
 
         let fechaInicioFormat = '';
         let fechaFinFormat = '';
@@ -259,41 +259,41 @@ document.addEventListener('DOMContentLoaded', async function() {
             hasta: fechaFinFormat || '',
             year: yearSelect.value || '',
             activo: activo,
-            surtidor_sin_clave: surtidorSinClave,
+            repartidor_sin_clave: repartidorSinClave,
             order_by: currentOrderBy,
             order_dir: currentOrderDir
         };
-        const surtidor = await getEmpleado(surtidorId, filters);
-        const fotoSurtidor = surtidor.foto_empleado ? 'https://storage.googleapis.com/at_private_storage/' + surtidor.foto_empleado : '/static/assets/img/faces/default.png';
-        surtidorInfo.innerHTML = `
+        const repartidor = await getEmpleado(repartidorId, filters);
+        const fotoSurtidor = repartidor.foto_empleado ? 'https://storage.googleapis.com/at_private_storage/' + repartidor.foto_empleado : '/static/assets/img/faces/default.png';
+        repartidorInfo.innerHTML = `
         <div class="row mt-3">
             <div class="col-md-4">
-                <img src="${fotoSurtidor}" alt="Foto de ${surtidor.nombre}" class="img-fluid">
+                <img src="${fotoSurtidor}" alt="Foto de ${repartidor.nombre}" class="img-fluid">
             </div>
             <div class="col-md-8">
-                <p><strong>Nombre:</strong> ${surtidor.nombre} ${surtidor.apellido_paterno} ${surtidor.apellido_materno}</p>
-                <p><strong>RFC:</strong> ${surtidor.rfc || 'N/A'}</p>          
-                <p><strong>Activo:</strong> ${surtidor.activo ? 'Sí' : 'No'}</p>
-                <p><strong>Clave Empleado:</strong> ${surtidor.clave_empleado || 'N/A'}</p>
+                <p><strong>Nombre:</strong> ${repartidor.nombre} ${repartidor.apellido_paterno} ${repartidor.apellido_materno}</p>
+                <p><strong>RFC:</strong> ${repartidor.rfc || 'N/A'}</p>          
+                <p><strong>Activo:</strong> ${repartidor.activo ? 'Sí' : 'No'}</p>
+                <p><strong>Clave Empleado:</strong> ${repartidor.clave_empleado || 'N/A'}</p>
             </div>
         </div>
         <div class="row mt-3">
             <div class="col-md-6">
-                <p><strong>CURP:</strong> ${surtidor.curp || 'N/A'}</p>
-                <p><strong>Fecha de Nacimiento:</strong> ${surtidor.fecha_nacimiento || 'N/A'}</p>
-                <p><strong>Género:</strong> ${surtidor.fecha_ingreso || 'N/A'}</p>
+                <p><strong>CURP:</strong> ${repartidor.curp || 'N/A'}</p>
+                <p><strong>Fecha de Nacimiento:</strong> ${repartidor.fecha_nacimiento || 'N/A'}</p>
+                <p><strong>Género:</strong> ${repartidor.fecha_ingreso || 'N/A'}</p>
             </div>
             <div class="col-md-6">
-                <p><strong>Email:</strong> ${surtidor.email_adicional || 'N/A'}</p>
-                <p><strong>Celular:</strong> ${surtidor.celular || 'N/A'}</p>
+                <p><strong>Email:</strong> ${repartidor.email_adicional || 'N/A'}</p>
+                <p><strong>Celular:</strong> ${repartidor.celular || 'N/A'}</p>
             </div>
         </div>
         `;
 
-        const movimientos = await fetchMovimientosSurtidor({ surtidor_id: surtidorId });
+        const movimientos = await fetchMovimientosRepartidor({ repartidor_id: repartidorId });
         movimientosSurtidorTableBody.innerHTML = '';
         if (movimientos.length === 0) {
-            movimientosSurtidorTableBody.innerHTML = '<tr class="no-movimientos"><td colspan="14" class="text-center">No se encuentran movimientos para este surtidor</td></tr>';
+            movimientosSurtidorTableBody.innerHTML = '<tr class="no-movimientos"><td colspan="11" class="text-center">No se encuentran movimientos para este repartidor</td></tr>';
         } else {
             movimientos.forEach(movimiento => {
                 const row = document.createElement('tr');
@@ -363,10 +363,10 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 
     async function loadMovimimientoDetails(movimientoId) {
-        const movimiento = await fetchMovimientoDetalleSurtidor(movimientoId);
+        const movimiento = await fetchMovimientoDetalleRepartidor(movimientoId);
         movimientoDetalleTableBody.innerHTML = '';
         if (movimiento.length === 0) {
-            movimientoDetalleTableBody.innerHTML = '<tr class="no-movimientos-detalle"><td colspan="12" class="text-center">No se encuentran detalles para esta movimiento</td></tr>';
+            movimientoDetalleTableBody.innerHTML = '<tr class="no-movimientos-detalle"><td colspan="10" class="text-center">No se encuentran detalles para esta movimiento</td></tr>';
         } else {
             movimiento.forEach(detalle => {
                 const row = document.createElement('tr');
@@ -423,7 +423,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         fetchAndRenderSurtidores();
     });
 
-    document.getElementById('surtidor_sin_clave').addEventListener('change', function() {
+    document.getElementById('repartidor_sin_clave').addEventListener('change', function() {
         fetchAndRenderSurtidores();
     });
 
@@ -454,7 +454,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     clearSearchButton.addEventListener('click', function() {
         document.getElementById('search').value = '';
         document.getElementById('activo').value = '';
-        document.getElementById('surtidor_sin_clave').value = '';
+        document.getElementById('repartidor_sin_clave').value = '';
         document.getElementById('rango_fecha').value = '';
         document.getElementById('year').value = '';
         yearSelect.disabled = false;
@@ -463,22 +463,22 @@ document.addEventListener('DOMContentLoaded', async function() {
     });
 
     // Quitar el scroll del html mientras el modal esté abierto
-    $('#surtidorModal').on('show.bs.modal', function () {
+    $('#repartidorModal').on('show.bs.modal', function () {
         const html = document.querySelector('html');
         html.classList.remove('perfect-scrollbar-on');
     });
 
 
-    $('#surtidorModal').on('hidden.bs.modal', function () {
+    $('#repartidorModal').on('hidden.bs.modal', function () {
         const html = document.querySelector('html');
         html.classList.add('perfect-scrollbar-on');
         //Limpiar tablas y campos
-        surtidorInfo.innerHTML = '';
+        repartidorInfo.innerHTML = '';
         movimientosSurtidorTableBody.innerHTML = '';
         movimientoDetalleTableBody.innerHTML = '';
         movimientoDetalleTableBody.innerHTML = '<tr class="no-movimientos-detalle"><td colspan="10" class="text-center">Da clic en una movimiento para ver su detalle</td></tr>';
     }); 
 
-    // Cargar los surtidores al cargar la página
+    // Cargar los repartidores al cargar la página
     fetchAndRenderSurtidores();
 });

@@ -1177,7 +1177,7 @@ def get_reporte_surtidores(request):
         # Consulta SQL con LEFT JOIN para incluir surtidores sin ventas
         query = f"""
             SELECT e.id, e.nombre, e.apellido_paterno, e.apellido_materno, e.codigo_rol, 
-                COALESCE(SUM(md.cantidad_entregada), 0) AS piezas, 
+                COALESCE(SUM(CASE WHEN md.cantidad_entregada IS NOT NULL THEN md.cantidad_entregada ELSE 0 END), 0) AS piezas,
                 COALESCE(COUNT(DISTINCT m.fecha_entrega), 0) AS surtidos,
                 e.activo, e.empleado_imagen
             FROM home_empleado e
@@ -2279,3 +2279,195 @@ def update_movimiento_repartidor(request):
     except Exception as e:
         print(f"Error en update_panel_repartidor_movimiento: {str(e)}")
         return JsonResponse({'error': f"General error: {str(e)}"}, status=500)
+
+@csrf_exempt
+def get_reporte_repartidores(request):
+    try:
+        # Obtención de parámetros de la solicitud
+        search = request.GET.get('search', '')  # Buscar por nombre, apellido, codigo_surtidor
+        desde = request.GET.get('desde', '')
+        hasta = request.GET.get('hasta', '')
+        activo = request.GET.get('activo', '')  # Todos, activos, inactivos
+        repartidor_sin_clave = request.GET.get('repartidor_sin_clave', '')  # Con clave, sin clave
+        year = request.GET.get('year', '')
+        page = int(request.GET.get('page', 1))
+        page_size = int(request.GET.get('page_size', 10))
+        order_by = request.GET.get('order_by', 'nombre')
+        order_dir = request.GET.get('order_dir', 'asc')
+
+        # Conexión a la base de datos
+        conn = m.connect(host=ENV_MYSQL_HOST, user=ENV_MYSQL_USER, password=ENV_MYSQL_PASSWORD, database=ENV_MYSQL_NAME, port=ENV_MYSQL_PORT)
+        cur = conn.cursor()
+
+        # Construir la cláusula de ordenación
+        if order_by == 'e.codigo_repartidor':
+            order_by_clause = f"CASE WHEN e.codigo_rol IS NULL OR e.codigo_rol = '' THEN 1 ELSE 0 END, e.codigo_rol {order_dir.upper()}"
+        else:
+            order_by_clause = f"{order_by} {order_dir.upper()}"
+
+        # Lógica para manejar 'activo'
+        if activo == '1':
+            activo_clause = "AND e.activo = 1"
+        elif activo == '0':
+            activo_clause = "AND e.activo = 0"
+        else:
+            activo_clause = ""  # No se añade la condición de activo
+
+        # Consulta SQL con LEFT JOIN para incluir surtidores sin ventas
+        query = f"""
+            SELECT e.id, e.nombre, e.apellido_paterno, e.apellido_materno, e.codigo_rol, 
+                COALESCE(SUM(CASE WHEN md.cantidad_entregada IS NOT NULL AND md.cantidad_entregada != 0 THEN md.cantidad_entregada ELSE 0 END), 0) AS piezas,
+                COALESCE(COUNT(DISTINCT m.fecha_final_repartidor), 0) AS repartidos,
+                e.activo, e.empleado_imagen
+            FROM home_empleado e
+            LEFT JOIN home_movimiento m ON m.repartidor_id = e.id
+            LEFT JOIN home_movimientodetalle md ON m.id = md.movimiento_id
+            WHERE (%s = '' OR e.nombre LIKE %s OR e.apellido_paterno LIKE %s OR e.apellido_materno LIKE %s OR e.codigo_rol LIKE %s)
+            {activo_clause}
+            AND (
+                (%s = 'con_clave' AND e.codigo_rol IS NOT NULL)
+                OR (%s = 'sin_clave' AND e.codigo_rol IS NULL AND md.id IS NOT NULL)
+                OR (%s = '' AND (md.id IS NOT NULL OR e.codigo_rol IS NOT NULL))
+            )
+            AND e.rol_id = 4
+        """
+
+        params = [search, f'%{search}%', f'%{search}%', f'%{search}%', f'%{search}%', repartidor_sin_clave, repartidor_sin_clave, repartidor_sin_clave]
+
+        # Agregar filtros de fecha si existen
+        if desde:
+            desde = datetime.strptime(desde, "%Y-%m-%d").replace(hour=0, minute=0, second=0, microsecond=0)
+            query += " AND m.fecha_entrega >= %s"
+            params.append(desde)
+        if hasta:
+            hasta = datetime.strptime(hasta, "%Y-%m-%d").replace(hour=23, minute=59, second=59, microsecond=0)
+            query += " AND m.fecha_entrega <= %s"
+            params.append(hasta)
+
+        if year:
+            query += " AND YEAR(m.fecha_entrega) = %s"
+            params.append(year)
+
+        query += f"""
+            GROUP BY e.id, e.nombre, e.apellido_paterno, e.apellido_materno, e.codigo_rol, e.activo, e.empleado_imagen
+            ORDER BY {order_by_clause}
+        """
+        # Ejecución de la consulta
+        cur.execute(query, params)
+        repartidores = cur.fetchall()
+
+        # Paginación
+        paginator = Paginator(repartidores, page_size)
+        repartidores_page = paginator.get_page(page)
+
+        # Convertir resultados a formato de diccionario
+        repartidor_list = [dict(zip([column[0] for column in cur.description], row)) for row in repartidores_page]
+
+        print(repartidor_list)
+        print(query)
+        # Cerrar la conexión
+        cur.close()
+        conn.close()
+
+        # Devolver los resultados en formato JSON
+        return JsonResponse({
+            'total': paginator.count,
+            'num_pages': paginator.num_pages,
+            'current_page': repartidores_page.number,
+            'page_size': page_size,
+            'results': repartidor_list,
+            'has_previous': repartidores_page.has_previous(),
+            'has_next': repartidores_page.has_next()
+        }, safe=False)
+
+    except m.Error as e:
+        print(f"Error: {str(e)}")
+        return JsonResponse({'error': f"MySQL error: {str(e)}"}, status=500)
+    except Exception as e:
+        print(f"Error: {str(e)}")
+        return JsonResponse({'error': f"General error: {str(e)}"}, status=500)
+    
+
+@csrf_exempt
+def get_movimientos_repartidor(request):
+    try:
+        repartidor_id = request.GET.get('repartidor_id', '')
+        desde = request.GET.get('desde', '')
+        hasta = request.GET.get('hasta', '')
+        year = request.GET.get('year', '')
+        order_by = request.GET.get('order_by', 'fecha_movimiento')
+        order_dir = request.GET.get('order_dir', 'desc')
+
+        conn = m.connect(host=ENV_MYSQL_HOST, user=ENV_MYSQL_USER, password=ENV_MYSQL_PASSWORD, database=ENV_MYSQL_NAME, port=ENV_MYSQL_PORT)
+        cur = conn.cursor()
+
+        # Construir la consulta SQL con filtros
+        order_by_clause = f"{order_by} {order_dir.upper()}, folio DESC"
+
+        query = f"""
+            SELECT m.id, m.fecha_movimiento, m.condicion, m.folio, m.tipo_movimiento, m.almacen, m.cliente, m.sucursal, m.cantidad_pedida, m.cantidad_entregada,
+             m.importe_entregado, m.iva_entregado, m.descuento_entregado, m.total_entregado, m.fecha_entrega, m.fecha_surtiendo FROM home_movimiento m
+            INNER JOIN home_movimientodetalle md ON m.id = md.movimiento_id
+            WHERE m.repartidor_id = %s AND m.fecha_final_repartidor IS NOT NULL
+            GROUP BY m.id
+        """
+        params = [repartidor_id]
+
+        if desde:
+            desde = datetime.strptime(desde, "%Y-%m-%d").replace(hour=0, minute=0, second=0, microsecond=0)
+            query += " AND m.fecha_entrega >= %s"
+            params.append(desde)
+        if hasta:
+            hasta = datetime.strptime(hasta, "%Y-%m-%d").replace(hour=23, minute=59, second=59, microsecond=0)
+            query += " AND m.fecha_entrega <= %s"
+            params.append(hasta)
+
+        if year:
+            query += " AND YEAR(fecha_entrega) = %s"
+            params.append(year)
+        
+        query += f" ORDER BY {order_by_clause}"
+
+        cur.execute(query, params)
+        movimientos = cur.fetchall()
+
+        # Convertir a lista de diccionarios
+        movimientos_list = [dict(zip([column[0] for column in cur.description], row)) for row in movimientos]
+
+        cur.close()
+        conn.close()
+
+        return JsonResponse(movimientos_list, safe=False)
+    except m.Error as e:
+        return JsonResponse({'error': f"MySQL error: {str(e)}"}, status=500)
+    except Exception as e:
+        return JsonResponse({'error': f"General error: {str(e)}"}, status=500)
+    
+@csrf_exempt
+def get_movimientodetalle_repartidor(request):
+    try:
+        movimiento_id = request.GET.get('movimiento_id', '')
+
+        conn = m.connect(
+            host=ENV_MYSQL_HOST,
+            user=ENV_MYSQL_USER,
+            password=ENV_MYSQL_PASSWORD,
+            database=ENV_MYSQL_NAME,
+            port=ENV_MYSQL_PORT
+        )
+        cur = conn.cursor()
+        cur.execute("""SELECT m.fecha_entrega, md.codigo_producto, md.producto, md.factor_um, md.cantidad_pedida, md.cantidad_entregada, 
+                    md.unidad_medida, md.importe_entregado, md.iva_entregado, md.descuento_entregado, md.total_entregado, md.observacion FROM home_movimientodetalle md 
+                    INNER JOIN home_movimiento m ON md.movimiento_id = m.id
+                    WHERE movimiento_id = %s;""", (movimiento_id,))
+        movimiento_detalle = cur.fetchall()
+
+        movimiento_detalle_list = [dict(zip([column[0] for column in cur.description], row)) for row in movimiento_detalle]
+        cur.close()
+        conn.close()
+
+        return JsonResponse(movimiento_detalle_list, safe=False)
+    except Exception as e:
+        print(f"Error: {e}")
+        return JsonResponse({'error': str(e)}, status=500)
+    
