@@ -2284,7 +2284,7 @@ def update_movimiento_repartidor(request):
 def get_reporte_repartidores(request):
     try:
         # Obtención de parámetros de la solicitud
-        search = request.GET.get('search', '').encode('utf-8').decode('utf-8', errors='ignore')  # Asegurar codificación UTF-8
+        search = request.GET.get('search', '').encode('utf-8').decode('utf-8', errors='replace')  # Asegurar codificación UTF-8
         desde = request.GET.get('desde', '')
         hasta = request.GET.get('hasta', '')
         activo = request.GET.get('activo', '')  # Todos, activos, inactivos
