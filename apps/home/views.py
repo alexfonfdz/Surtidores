@@ -2284,7 +2284,7 @@ def update_movimiento_repartidor(request):
 def get_reporte_repartidores(request):
     try:
         # Obtención de parámetros de la solicitud
-        search = request.GET.get('search', '')  # Buscar por nombre, apellido, codigo_surtidor
+        search = request.GET.get('search', '').encode('utf-8').decode('utf-8', errors='ignore')  # Asegurar codificación UTF-8
         desde = request.GET.get('desde', '')
         hasta = request.GET.get('hasta', '')
         activo = request.GET.get('activo', '')  # Todos, activos, inactivos
@@ -2360,12 +2360,12 @@ def get_reporte_repartidores(request):
         paginator = Paginator(repartidores, page_size)
         repartidores_page = paginator.get_page(page)
 
-        # Convertir resultados a formato de diccionario y agregar utf-8
+        # Convertir resultados a formato de diccionario y manejar caracteres no ASCII
         repartidor_list = [
             dict(zip(
                 [column[0] for column in cur.description],
                 [
-                    value if not isinstance(value, str) else value.encode("utf-8").decode("utf-8", errors="replace")
+                    value if not isinstance(value, str) else value.encode("utf-8").decode("utf-8", errors="ignore")
                     for value in row
                 ]
             ))
