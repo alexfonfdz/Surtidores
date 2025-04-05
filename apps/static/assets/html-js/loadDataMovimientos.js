@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         if (almacenes) {
             almacenSelect.innerHTML = '<option value="">Cualquier almacén</option>'; // Opción por defecto
             almacenes.forEach(almacen => {
-                almacenSelect.innerHTML += `<option value="${almacen[0]}">${almacen[0]}</option>`;
+                almacenSelect.innerHTML += `<option value="${almacen}">${almacen}</option>`;
             });
         }
     }
@@ -29,12 +29,11 @@ document.addEventListener('DOMContentLoaded', async function () {
     // Función para llenar el select de surtidor
     async function populateSurtidores() {
         const surtidor = await fetchSurtidores();
-        console.log(surtidor);
         if (surtidor || surtidor != []) {
             surtidorSelect.innerHTML = '<option value="">Cualquier Surtidor</option>'; // Opción por defecto
             surtidor.forEach(surtir => {
-                const nombreCompleto = `${surtir[1]} ${surtir[2]} ${surtir[3]}`;
-                surtidorSelect.innerHTML += `<option value="${surtir[0]}">${nombreCompleto}</option>`;
+                const nombreCompleto = `${surtir.nombre} ${surtir.apellido_paterno} ${surtir.apellido_materno}`;
+                surtidorSelect.innerHTML += `<option value="${surtir.id}">${nombreCompleto}</option>`;
             });
         }
     }
@@ -45,8 +44,8 @@ document.addEventListener('DOMContentLoaded', async function () {
         if (vendedores) {
             vendedoresSelect.innerHTML = '<option value="">Cualquier Vendedor</option>'; // Opción por defecto
             vendedores.forEach(vendedor => {
-                const nombreCompleto = `${vendedor[1]} ${vendedor[2]} ${vendedor[3]}`;
-                vendedoresSelect.innerHTML += `<option value="${vendedor[0]}">${nombreCompleto}</option>`;
+                const nombreCompleto = `${vendedor.nombre} ${vendedor.apellido_paterno} ${vendedor.apellido_materno}`;
+                vendedoresSelect.innerHTML += `<option value="${vendedor.id}">${nombreCompleto}</option>`;
             });
         }
     }
@@ -57,7 +56,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         if (monedas) {
             monedaSelect.innerHTML = '<option value="">Cualquier Moneda</option>'; // Opción por defecto
             monedas.forEach(moneda => {
-                monedaSelect.innerHTML += `<option value="${moneda[0]}">${moneda[0]}</option>`;
+                monedaSelect.innerHTML += `<option value="${moneda}">${moneda}</option>`;
             });
         }
     }

@@ -10,19 +10,6 @@ urlpatterns = [
     # The home page
     path('', views.index, name='home'),
 
-    # =================== FECHAS =================== #
-    path('getYears', views.get_years, name='getYears'),
-    path('getMonths', views.get_months, name='getMonths'),
-    path('getDays', views.get_days, name='getDays'),
-
-    # ================== PRODUCTOS ================= #
-    path('getProducts', views.get_products, name='getProducts'),    
-    path('getFolio', views.get_folio, name='getFolio'),
-
-    # ================== CLIENTES ================== #
-    path('getClientesNuevos', views.get_clientes_nuevos, name='getClientesNuevos'),
-    path('getClientesAusentes', views.get_clientes_ausentes, name='getClientesAusentes'),
-
     # ================= EMPLEADOS ================== #
     path('getEmpleados', views.get_empleados, name='getEmpleados'),
     path('getEmpleado', views.get_empleado, name='getEmpleado'),    

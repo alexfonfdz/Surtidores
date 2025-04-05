@@ -60,151 +60,6 @@ def pages(request):
         html_template = loader.get_template('home/page-500.html')
         return HttpResponse(html_template.render(context, request))
 
-
-def get_years(request):
-    conn = p.connect(dbname= ENV_PSQL_NAME, user=ENV_PSQL_USER, host=ENV_PSQL_HOST, password=ENV_PSQL_PASSWORD, port=ENV_PSQL_PORT)
-    cur = conn.cursor()
-    cur.execute(f"SELECT TO_CHAR(fecha, 'YYYY') AS año, CAST(SUM(saldo_oc) as money) as suma_de_BO, CAST(SUM(importe)AS MONEY) as Suma_de_importe FROM {ENV_SCHEMA}.admintotal_movimientodetalle  GROUP BY año ORDER BY año ASC")
-    dataYears  = cur.fetchall()
-    cur.close() 
-    conn.close()
-
-    return JsonResponse(dataYears, safe = False)
-
-@csrf_exempt
-def get_months(request):
-    year = json.loads(request.body)
-    year = year['year']
-    conn = p.connect(dbname= ENV_PSQL_NAME, user=ENV_PSQL_USER, host=ENV_PSQL_HOST, password=ENV_PSQL_PASSWORD, port=ENV_PSQL_PORT)
-    cur = conn.cursor()
-    cur.execute(f"SELECT TO_CHAR(fecha, 'MONTH') AS MES, CAST(SUM(saldo_oc) as money) as suma_de_BO, CAST(SUM(importe)AS MONEY) as Suma_de_importe FROM {ENV_SCHEMA}.admintotal_movimientodetalle where extract(year from {ENV_SCHEMA}.admintotal_movimientodetalle.fecha) = {year} GROUP BY MES ORDER BY MES ASC")       
-    dataYearMonth  = cur.fetchall()
-    cur.close()
-    conn.close()
-
-    return JsonResponse(dataYearMonth, safe = False)
-
-@csrf_exempt
-def get_days(request):
-    data = json.loads(request.body)
-    year = data['year']
-    month = data['month']
-    month = month.strip()
-    month = datetime.strptime(month, "%B").strftime("%m")
-    conn=p.connect(dbname= ENV_PSQL_NAME, user=ENV_PSQL_USER, host=ENV_PSQL_HOST, password=ENV_PSQL_PASSWORD, port=ENV_PSQL_PORT)
-    cur = conn.cursor()
-    cur.execute(f"SELECT TO_CHAR(fecha, 'DD-MM-YYYY') AS DIA, CAST(SUM(saldo_oc) as money) as suma_de_BO, CAST(SUM(importe)AS MONEY) as Suma_de_importe FROM {ENV_SCHEMA}.admintotal_movimientodetalle WHERE extract(year from {ENV_SCHEMA}.admintotal_movimientodetalle.fecha) = {year} AND extract(MONTH from {ENV_SCHEMA}.admintotal_movimientodetalle.fecha) = {month}  GROUP BY DIA ORDER BY DIA ASC")             
-    dataDay  = cur.fetchall()
-    cur.close()
-    conn.close()
-
-    return JsonResponse(dataDay, safe = False)
-
-@csrf_exempt
-def get_products(request):
-    data = json.loads(request.body)
-    day = data['day']
-    conn=p.connect(dbname= ENV_PSQL_NAME, user=ENV_PSQL_USER, host=ENV_PSQL_HOST, password=ENV_PSQL_PASSWORD, port=ENV_PSQL_PORT)
-    cur = conn.cursor()
-    cur.execute(f"SELECT admintotal_producto.descripcion, CAST(SUM(saldo_oc) as money) as suma_de_BO, CAST(SUM(importe)AS MONEY) as Suma_de_importe FROM {ENV_SCHEMA}.admintotal_producto INNER JOIN {ENV_SCHEMA}.admintotal_movimientodetalle ON {ENV_SCHEMA}.admintotal_producto.id = admintotal_movimientodetalle.producto_id WHERE DATE({ENV_SCHEMA}.admintotal_movimientodetalle.fecha) = TO_DATE('{day}', 'DD-MM-YYYY') GROUP BY admintotal_producto.descripcion")          
-    dataProducts = cur.fetchall()
-    cur.close()
-    conn.close()
-
-    return JsonResponse(dataProducts, safe = False)
-
-@csrf_exempt
-def get_folio(request):
-    data = json.loads(request.body)
-    day = data['day']
-    product = data['product']
-    conn = p.connect(dbname= ENV_PSQL_NAME, user=ENV_PSQL_USER, host=ENV_PSQL_HOST, password=ENV_PSQL_PASSWORD, port=ENV_PSQL_PORT)
-    cur = conn.cursor()
-    cur.execute(f"SELECT admintotal_movimiento.folio, CAST(SUM(admintotal_movimientodetalle.saldo_oc) as money) as suma_de_BO, CAST(SUM(admintotal_movimientodetalle.importe) AS MONEY) as Suma_de_importe FROM {ENV_SCHEMA}.admintotal_movimiento INNER JOIN {ENV_SCHEMA}.admintotal_movimientodetalle ON {ENV_SCHEMA}.admintotal_movimiento.poliza_ptr_id = {ENV_SCHEMA}.admintotal_movimientodetalle.movimiento_id INNER JOIN {ENV_SCHEMA}.admintotal_producto ON {ENV_SCHEMA}.admintotal_movimientodetalle.producto_id = {ENV_SCHEMA}.admintotal_producto.id WHERE DATE({ENV_SCHEMA}.admintotal_movimientodetalle.fecha) = TO_DATE('{day}', 'DD-MM-YYYY') AND {ENV_SCHEMA}.admintotal_producto.descripcion = '{product}' GROUP BY admintotal_movimiento.folio")
-    dataProductsFolio  = cur.fetchall()
-    cur.close()
-
-    return JsonResponse(dataProductsFolio, safe = False)
-
-@csrf_exempt
-def get_clientes_nuevos(request):
-    filtro_fecha = request.GET.get('date-control', 'un_mes')
-    descripcion = request.GET.get('descripcion', '')
-
-    if filtro_fecha == 'un_mes':
-        intervalo = '1 MONTH'
-    elif filtro_fecha == 'tres_meses':
-        intervalo = '3 MONTHS'
-    elif filtro_fecha == 'seis_meses':
-        intervalo = '6 MONTHS'
-    else:
-        intervalo = '1 MONTH'  # Default
-
-    conn = p.connect(dbname= ENV_PSQL_NAME, user=ENV_PSQL_USER, host=ENV_PSQL_HOST, password=ENV_PSQL_PASSWORD, port=ENV_PSQL_PORT)
-    cur = conn.cursor()
-    cur.execute(f"""
-            SELECT c.id, c.razon_social AS nombre, c.rfc, c.creado as fecha_registro
-            FROM {ENV_SCHEMA}.admintotal_cliente c
-            WHERE c.creado >= NOW() - INTERVAL '{intervalo}'
-            AND c.razon_social ILIKE %s
-        """, [f'%{descripcion}%'])
-    clientes = cur.fetchall()
-
-    paginator = Paginator(clientes, 10)  # Mostrar 10 registros por página
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-
-    data = {
-        'clientes': list(page_obj),
-        'has_next': page_obj.has_next(),
-        'has_previous': page_obj.has_previous(),
-        'num_pages': paginator.num_pages,
-        'current_page': page_obj.number,
-    }
-
-    return JsonResponse(data, safe=False)
-
-@csrf_exempt
-def get_clientes_ausentes(request):
-    filtro_fecha = request.GET.get('date-control', 'un_mes')
-    descripcion = request.GET.get('descripcion', '')
-
-    if filtro_fecha == 'un_mes':
-        intervalo = '1 MONTH'
-    elif filtro_fecha == 'dos_meses':
-        intervalo = '2 MONTHS'
-    elif filtro_fecha == 'tres_meses':
-        intervalo = '3 MONTHS'
-    elif filtro_fecha == 'seis_meses':
-        intervalo = '6 MONTHS'
-    else:
-        intervalo = '1 MONTH'  # Default
-
-    conn = p.connect(dbname= ENV_PSQL_NAME, user=ENV_PSQL_USER, host=ENV_PSQL_HOST, password=ENV_PSQL_PASSWORD, port=ENV_PSQL_PORT)
-    cur = conn.cursor()
-    cur.execute(f"""
-            SELECT c.id, c.razon_social AS nombre, c.rfc, fecha_ultima_venta
-	        FROM {ENV_SCHEMA}.admintotal_cliente c 
-            WHERE c.fecha_ultima_venta  < NOW() - INTERVAL '{intervalo}'
-            AND c.razon_social ILIKE %s
-        """, [f'%{descripcion}%'])
-    clientes = cur.fetchall()
-
-    paginator = Paginator(clientes, 10)  # Mostrar 10 registros por página
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-
-    data = {
-        'clientes': list(page_obj),
-        'has_next': page_obj.has_next(),
-        'has_previous': page_obj.has_previous(),
-        'num_pages': paginator.num_pages,
-        'current_page': page_obj.number,
-    }
-
-    return JsonResponse(data, safe=False)
-
-
 @csrf_exempt
 def get_empleados(request):
     try:
@@ -278,9 +133,15 @@ def get_empleados(request):
         total_records = cur_count.fetchone()[0]
         cur_count.close()
 
-        # Convertir resultados a lista de diccionarios
+        # Convertir resultados a lista de diccionarios y manejar caracteres no ASCII
         empleados_list = [
-            dict(zip(column_names, row))
+            dict(zip(
+                column_names,
+                [
+                    value.encode('utf-8').decode('utf-8', errors='replace') if isinstance(value, str) else value
+                    for value in row
+                ]
+            ))
             for row in empleados
         ]
 
@@ -344,20 +205,20 @@ def get_empleado(request):
         if not empleado:
             return JsonResponse({'error': 'Empleado no encontrado.'}, status=404)
 
-        # Convertir el resultado en un diccionario
+        # Convertir el resultado en un diccionario y manejar caracteres no ASCII
         empleado_dict = {
             'id': empleado[0],
             'empleado_imagen': empleado[1],
-            'nombre': empleado[2],
-            'apellido_paterno': empleado[3],
-            'apellido_materno': empleado[4],
+            'nombre': empleado[2].encode('utf-8').decode('utf-8', errors='replace') if isinstance(empleado[2], str) else empleado[2],
+            'apellido_paterno': empleado[3].encode('utf-8').decode('utf-8', errors='replace') if isinstance(empleado[3], str) else empleado[3],
+            'apellido_materno': empleado[4].encode('utf-8').decode('utf-8', errors='replace') if isinstance(empleado[4], str) else empleado[4],
             'clave_empleado': empleado[5],
             'curp': empleado[6],
             'rfc': empleado[7],
             'email': empleado[8],
             'celular': empleado[9],
             'rol_id': empleado[10],
-            'rol': empleado[11],
+            'rol': empleado[11].encode('utf-8').decode('utf-8', errors='replace') if isinstance(empleado[11], str) else empleado[11],
             'codigo_rol': empleado[12],
             'fecha_nacimiento': empleado[13],
             'activo': empleado[14],
@@ -434,6 +295,15 @@ def update_empleados(request):
 
         cur_m.execute("SELECT * FROM home_empleado;")
         empleados_m2 = cur_m.fetchall()
+
+        # Convertir resultados a lista de diccionarios y manejar caracteres no ASCII
+        empleados_m2 = [
+            {
+                column[0]: value.encode('utf-8').decode('utf-8', errors='replace') if isinstance(value, str) else value
+                for column, value in zip(cur_m.description, row)
+            }
+            for row in empleados_m2
+        ]
         cur_m.close()
         conn_m.close()
 
@@ -558,8 +428,14 @@ def get_roles(request):
         cur.execute("SELECT id, nombre FROM roles WHERE id != 1;")
         roles = cur.fetchall()
 
-        # Convertir los resultados en una lista de diccionarios
-        roles_list = [{'id': role[0], 'nombre': role[1]} for role in roles]
+        # Convertir los resultados en una lista de diccionarios y manejar caracteres no ASCII
+        roles_list = [
+            {
+                'id': role[0],
+                'nombre': role[1].encode('utf-8').decode('utf-8', errors='replace') if isinstance(role[1], str) else role[1]
+            }
+            for role in roles
+        ]
 
         # Cerrar la conexión
         cur.close()
@@ -579,12 +455,18 @@ def get_almacen(request):
     try:
         conn = m.connect(host=ENV_MYSQL_HOST, user=ENV_MYSQL_USER, password=ENV_MYSQL_PASSWORD, database=ENV_MYSQL_NAME, port=ENV_MYSQL_PORT)
         cur = conn.cursor()
-        cur.execute("SELECT DISTINCT(almacen) FROM home_movimiento WHERE status = 'Vendido' ORDER BY almacen DESC;")
+        cur.execute("SELECT DISTINCT(almacen) FROM home_movimiento WHERE fecha_entrega IS NOT NULL ORDER BY almacen DESC;")
         almacenes = cur.fetchall()
         cur.close()
         conn.close()
 
-        return JsonResponse(almacenes, safe=False)
+        # Convertir resultados a lista y manejar caracteres no ASCII
+        almacenes_list = [
+            almacen[0].encode('utf-8').decode('utf-8', errors='replace') if isinstance(almacen[0], str) else almacen[0]
+            for almacen in almacenes
+        ]
+
+        return JsonResponse(almacenes_list, safe=False)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
@@ -599,7 +481,7 @@ def get_vendedores(request):
             port=ENV_MYSQL_PORT
         )
         cur = conn.cursor()
-        cur.execute("SELECT DISTINCT(empleado_id) FROM home_movimiento WHERE status = 'Vendido' AND empleado_id IS NOT NULL ORDER BY empleado_id ASC;")
+        cur.execute("SELECT DISTINCT(empleado_id) FROM home_movimiento WHERE fecha_entrega IS NOT NULL AND empleado_id IS NOT NULL ORDER BY empleado_id ASC;")
         vendedores = cur.fetchall()
 
         if vendedores:
@@ -608,6 +490,16 @@ def get_vendedores(request):
                 query = f"SELECT id, nombre, apellido_paterno, apellido_materno FROM home_empleado WHERE id IN {tuple(vendedores_ids)} ORDER BY nombre ASC;"
                 cur.execute(query)
                 vendedores = cur.fetchall()
+                # Convertir resultados a lista de diccionarios y manejar caracteres no ASCII
+                vendedores = [
+                    {
+                        'id': v[0],
+                        'nombre': v[1].encode('utf-8').decode('utf-8', errors='replace') if isinstance(v[1], str) else v[1],
+                        'apellido_paterno': v[2].encode('utf-8').decode('utf-8', errors='replace') if isinstance(v[2], str) else v[2],
+                        'apellido_materno': v[3].encode('utf-8').decode('utf-8', errors='replace') if isinstance(v[3], str) else v[3]
+                    }
+                    for v in vendedores
+                ]
             else:
                 vendedores = []
         else:
@@ -627,12 +519,18 @@ def get_moneda(request):
     try:
         conn = m.connect(host=ENV_MYSQL_HOST, user=ENV_MYSQL_USER, password=ENV_MYSQL_PASSWORD, database=ENV_MYSQL_NAME, port=ENV_MYSQL_PORT)
         cur = conn.cursor()
-        cur.execute("SELECT DISTINCT(moneda) FROM home_movimiento WHERE status = 'Vendido' ORDER BY moneda ASC;")
+        cur.execute("SELECT DISTINCT(moneda) FROM home_movimiento WHERE fecha_entrega IS NOT NULL ORDER BY moneda ASC;")
         monedas = cur.fetchall()
         cur.close()
         conn.close()
 
-        return JsonResponse(monedas, safe=False)
+        # Convertir resultados a lista y manejar caracteres no ASCII
+        monedas_list = [
+            moneda[0].encode('utf-8').decode('utf-8', errors='replace') if isinstance(moneda[0], str) else moneda[0]
+            for moneda in monedas
+        ]
+
+        return JsonResponse(monedas_list, safe=False)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
@@ -650,6 +548,16 @@ def get_surtidor(request):
                 query = f"SELECT id, nombre, apellido_paterno, apellido_materno FROM home_empleado WHERE id IN {tuple(surtidores_ids)} ORDER BY nombre ASC;"
                 cur.execute(query)
                 surtidores = cur.fetchall()
+                # Convertir resultados a lista de diccionarios y manejar caracteres no ASCII
+                surtidores = [
+                    {
+                        'id': s[0],
+                        'nombre': s[1].encode('utf-8').decode('utf-8', errors='replace') if isinstance(s[1], str) else s[1],
+                        'apellido_paterno': s[2].encode('utf-8').decode('utf-8', errors='replace') if isinstance(s[2], str) else s[2],
+                        'apellido_materno': s[3].encode('utf-8').decode('utf-8', errors='replace') if isinstance(s[3], str) else s[3]
+                    }
+                    for s in surtidores
+                ]
             else:
                 surtidores = []
         else:
@@ -669,7 +577,7 @@ def get_surtidor(request):
 @csrf_exempt
 def get_movimientos(request):
     try:
-        search = request.GET.get('search', '')  # Buscar por folio, cliente, sucursal
+        search = request.GET.get('search', '').encode('utf-8').decode('utf-8', errors='replace')
         almacen = request.GET.get('almacen', '')
         vendedor = request.GET.get('vendedor_id', '')
         moneda = request.GET.get('moneda', '')
@@ -1969,7 +1877,12 @@ def get_movimientos_entregados(request):
         movimientos_page = paginator.get_page(page)
 
         # Convertir resultados a formato de diccionario
-        movimientos_list = [dict(zip([column[0] for column in cur.description], row)) for row in movimientos_page]
+        movimientos_list = [
+            dict(zip(
+                [column[0] for column in cur.description],
+                [row[i].encode('utf-8').decode('utf-8', errors='replace') if isinstance(row[i], str) else row[i] for i in range(len(row))]
+            )) for row in movimientos_page
+        ]
 
         # Cerrar la conexión
         cur.close()
@@ -2056,7 +1969,7 @@ def get_empleado_by_codigo_panel(request):
         empleado = {
             'id': empleado[0],
             'rol_id': empleado[1],
-            'codigo_rol': empleado[2]
+            'codigo_rol': empleado[2].encode('utf-8').decode('utf-8', errors='replace') if isinstance(empleado[2], str) else empleado[2]
         }
         cur.close()
         conn.close()
@@ -2078,7 +1991,13 @@ def get_repartidores(request):
 
         # Convertir los resultados a una lista de diccionarios
         repartidores = [
-            {'id': r[0], 'nombre': r[1], 'apellido_paterno': r[2], 'apellido_materno': r[3], 'codigo_rol': r[4]}
+            {
+             'id': r[0], 
+             'nombre': r[1].encode('utf-8').decode('utf-8', errors='replace') if isinstance(r[1], str) else r[1],
+             'apellido_paterno': r[2].encode('utf-8').decode('utf-8', errors='replace') if isinstance(r[2], str) else r[2],
+             'apellido_materno': r[3].encode('utf-8').decode('utf-8', errors='replace') if isinstance(r[3], str) else r[3], 
+             'codigo_rol': r[4].encode('utf-8').decode('utf-8', errors='replace') if isinstance(r[4], str) else r[4]
+             }
             for r in repartidores
         ]
         return JsonResponse(repartidores, safe=False)
@@ -2193,8 +2112,13 @@ def get_movimientos_entregados_domicilio(request):
         paginator = Paginator(movimientos, page_size)
         movimientos_page = paginator.get_page(page)
 
-        # Convertir resultados a formato de diccionario
-        movimientos_list = [dict(zip([column[0] for column in cur.description], row)) for row in movimientos_page]
+        # Convertir resultados a formato de diccionario y decodificar a UTF-8
+        movimientos_list = [
+            dict(zip(
+                [column[0] for column in cur.description],
+                [row[i].encode('utf-8').decode('utf-8', errors='replace') if isinstance(row[i], str) else row[i] for i in range(len(row))]
+            )) for row in movimientos_page
+        ]
 
         # Cerrar la conexión
         cur.close()
@@ -2231,11 +2155,11 @@ def get_empleado_by_codigo_repartidor(request):
             return JsonResponse({'error': 'Empleado no encontrado'}, status=404)
         if empleado[1] != 4:
             return JsonResponse({'error': 'El empleado no es un surtidor'}, status=403)
-        # Convertir el resultado a un diccionario
+        # Convertir el resultado a un diccionario y decodificar a UTF-8
         empleado = {
             'id': empleado[0],
             'rol_id': empleado[1],
-            'codigo_rol': empleado[2]
+            'codigo_rol': empleado[2].encode('utf-8').decode('utf-8', errors='replace') if isinstance(empleado[2], str) else empleado[2]
         }
         cur.close()
         conn.close()
@@ -2365,7 +2289,7 @@ def get_reporte_repartidores(request):
             dict(zip(
                 [column[0] for column in cur.description],
                 [
-                    value if not isinstance(value, str) else value.encode("utf-8").decode("utf-8", errors="ignore")
+                    value if not isinstance(value, str) else value.encode("utf-8").decode("utf-8", errors="replace")
                     for value in row
                 ]
             ))
@@ -2438,8 +2362,17 @@ def get_movimientos_repartidor(request):
         cur.execute(query, params)
         movimientos = cur.fetchall()
 
-        # Convertir a lista de diccionarios
-        movimientos_list = [dict(zip([column[0] for column in cur.description], row)) for row in movimientos]
+        # Convertir a lista de diccionarios y manejar caracteres no ASCII
+        movimientos_list = [
+            dict(zip(
+                [column[0] for column in cur.description],
+                [
+                    value if not isinstance(value, str) else value.encode("utf-8").decode("utf-8", errors="replace")
+                    for value in row
+                ]
+            ))
+            for row in movimientos
+        ]
 
         cur.close()
         conn.close()
@@ -2469,7 +2402,17 @@ def get_movimientodetalle_repartidor(request):
                     WHERE movimiento_id = %s;""", (movimiento_id,))
         movimiento_detalle = cur.fetchall()
 
-        movimiento_detalle_list = [dict(zip([column[0] for column in cur.description], row)) for row in movimiento_detalle]
+        # Convertir a lista de diccionarios y manejar caracteres no ASCII
+        movimiento_detalle_list = [
+            dict(zip(
+                [column[0] for column in cur.description],
+                [
+                    value if not isinstance(value, str) else value.encode("utf-8").decode("utf-8", errors="replace")
+                    for value in row
+                ]
+            ))
+            for row in movimiento_detalle
+        ]
         cur.close()
         conn.close()
 
