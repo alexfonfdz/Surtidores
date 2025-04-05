@@ -560,7 +560,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const html = document.querySelector('html');
         html.classList.add('perfect-scrollbar-on');
         document.getElementById('codigoMovimiento').value = ''; // Limpiar el campo de búsqueda al cerrar el modal
-        setInterval(() => {
+        setTimeout(() => {
             document.getElementById('codigoMovimiento').focus(); // Volver a enfocar el campo de búsqueda
         }, 500); // Esperar un poco para que el modal se cierre completamente antes de enfocar el campo
         

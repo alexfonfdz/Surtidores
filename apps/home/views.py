@@ -2360,11 +2360,18 @@ def get_reporte_repartidores(request):
         paginator = Paginator(repartidores, page_size)
         repartidores_page = paginator.get_page(page)
 
-        # Convertir resultados a formato de diccionario
-        repartidor_list = [dict(zip([column[0] for column in cur.description], row)) for row in repartidores_page]
+        # Convertir resultados a formato de diccionario y agregar utf-8
+        repartidor_list = [
+            dict(zip(
+                [column[0] for column in cur.description],
+                [
+                    value if not isinstance(value, str) else value.encode("utf-8").decode("utf-8", errors="replace")
+                    for value in row
+                ]
+            ))
+            for row in repartidores_page
+        ]
 
-        print(repartidor_list)
-        print(query)
         # Cerrar la conexión
         cur.close()
         conn.close()
