@@ -807,18 +807,40 @@ def get_movimiento_detalle(request):
 @csrf_exempt
 def update_movimiento_detalle(request):
     try:
-        user_id = request.user.id
-        data = json.loads(request.body)
-        surtidor_id = data['surtidor_id']
-        movimiento_id = data['movimiento_id']
-        detalles = data['detalle_venta']
+        # Verificar que el método sea POST
+        if request.method != 'POST':
+            return JsonResponse({'error': 'Método no permitido. Usa POST.'}, status=405)
 
+        # Verificar que el cuerpo de la solicitud no esté vacío
+        if not request.body:
+            return JsonResponse({'error': 'El cuerpo de la solicitud está vacío.'}, status=400)
+
+        # Intentar cargar el JSON del cuerpo de la solicitud
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'El cuerpo de la solicitud no es un JSON válido.'}, status=400)
+
+        # Obtener los datos necesarios
+        user_id = request.user.id
+        surtidor_id = data.get('surtidor_id')
+        movimiento_id = data.get('movimiento_id')
+        detalles = data.get('detalle_venta')
+
+        # Validar que los datos requeridos estén presentes
         if not detalles:
             return JsonResponse({'error': 'No se han proporcionado detalles de la venta.'}, status=400)
 
         conn = m.connect(host=ENV_MYSQL_HOST, user=ENV_MYSQL_USER, password=ENV_MYSQL_PASSWORD, database=ENV_MYSQL_NAME, port=ENV_MYSQL_PORT)
         cur = conn.cursor()
 
+        cur.execute("SELECT codigo_rol FROM home_empleado WHERE id = %s;", (surtidor_id,))
+        surtidor = cur.fetchone()
+
+        if not surtidor:
+            return JsonResponse({'error': 'El surtidor no existe.'}, status=404)
+
+        # Procesar los detalles de la venta
         for detalle in detalles:
             if 'id' not in detalle or 'cantidad_entregada' not in detalle:
                 return JsonResponse({'error': 'Los detalles de la venta deben contener el id y la cantidad entregada.'}, status=400)
@@ -851,7 +873,7 @@ def update_movimiento_detalle(request):
                 cur.execute("""
                     UPDATE home_movimientodetalle
                     SET cantidad_entregada = %s, importe_entregado = %s, iva_entregado = %s, descuento_entregado = %s, total_entregado = %s, fecha_registro = NOW(),
-                        fecha_registro = NOW(), usuario_registro_id = %s, observacion = %s
+                        usuario_registro_id = %s, observacion = %s
                     WHERE id = %s;
                 """, (cantidad_entregada, importe_entregado, iva_entregado, descuento_entregado, total_entregado, user_id, observaciones, movimiento_detalle_id))
             elif cantidad_entregada_anterior != cantidad_entregada:
@@ -897,9 +919,12 @@ def update_movimiento_detalle(request):
         conn.close()
 
         return JsonResponse({'message': 'Detalle de venta actualizado correctamente.'}, safe=False)
+    except m.Error as e:
+        print(f"MySQL error: {str(e)}")
+        return JsonResponse({'error': f"MySQL error: {str(e)}"}, status=500)
     except Exception as e:
-        print(str(e))
-        return JsonResponse({'error': str(e)}, status=500)
+        print(f"Error general: {str(e)}")
+        return JsonResponse({'error': f"General error: {str(e)}"}, status=500)
 
 
 @csrf_exempt
@@ -1836,7 +1861,7 @@ def get_movimientos_entregados(request):
                    fecha_surtiendo, tipo_movimiento, status, codigo_surtidor
             FROM home_movimiento
             WHERE (status = 'Pendiente' OR status = 'Parcial' OR status = 'Vendido')
-            AND fecha_entrega IS NOT NULL AND fecha_surtiendo IS NOT NULL AND solo_domicilio = 1 AND fecha_inicio_repartidor IS NULL
+            AND fecha_entrega IS NOT NULL AND solo_domicilio = 1 AND fecha_inicio_repartidor IS NULL
         """
         params = []
 
@@ -2071,7 +2096,7 @@ def get_movimientos_entregados_domicilio(request):
                    fecha_surtiendo, tipo_movimiento, status, codigo_surtidor
             FROM home_movimiento
             WHERE (status = 'Pendiente' OR status = 'Parcial' OR status = 'Vendido')
-            AND fecha_entrega IS NOT NULL AND fecha_surtiendo IS NOT NULL AND solo_domicilio = 1 AND fecha_inicio_repartidor IS NOT NULL
+            AND fecha_entrega IS NOT NULL AND solo_domicilio = 1 AND fecha_inicio_repartidor IS NOT NULL
             AND fecha_final_repartidor IS NULL AND repartidor_id IS NOT NULL AND codigo_repartidor = %s
         """
         params = [codigo_repartidor]

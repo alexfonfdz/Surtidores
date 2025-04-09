@@ -1,6 +1,4 @@
 document.addEventListener('DOMContentLoaded', function () {
-    const divSurtidores = document.getElementById('surtidores-container');
-    const tableVentasPendientes = document.getElementById('tableVentasPendientes');
     const saveSurtirButton = document.getElementById('SurtirModalSave');
     const saveEntregarIncompletoButton = document.getElementById('EntregarModalSaveIncompleto');
     const saveEntregarCompletoButton = document.getElementById('EntregarModalSaveCompleto');
@@ -9,12 +7,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const entregarModalTableBody = document.getElementById('EntregarModalTableBody');
     const entregarModalTable = document.getElementById('EntregarModalTable');
     const ventaDetalleTableBody = document.getElementById('movimiento-detalle-table-body');
-    const tablaVentas = document.getElementById('ventas-table-body');
     const codigoBusqueda = document.getElementById('codigo-busqueda');
 
-    const filterEntrega = document.getElementById('filterEntrega');        
-    const customSelectWrapper = document.querySelector('.custom-select-wrapper');  
-    
     const prevPageButton = document.getElementById('prev-page');
     const nextPageButton = document.getElementById('next-page');
     const pageInfo = document.getElementById('page-info');
@@ -128,12 +122,6 @@ document.addEventListener('DOMContentLoaded', function () {
     
             data.results.forEach(movimiento => {
                 const row = document.createElement('tr');
-                // row amarilla si fecha_surtiendo no es null
-                if (movimiento.fecha_surtiendo) {
-                    row.classList.add('bg-warning');
-                } else {
-                    row.classList.remove('bg-warning');
-                }
                 const tipoEntrega = movimiento.solo_domicilio ? 'Entrega a Domicilio' : 'Entrega en Piso';
     
                 row.innerHTML = `
@@ -145,10 +133,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     <td>$${movimiento.total_pedido || '0.00'}</td>
                     <td>${tipoEntrega}</td>
                     <td><button class="btn btn-primary btn-sm ver_modal" data-toggle="modal" data-target="#ventaModal" data-movimiento-id="${movimiento.id}">Ver</button></td>
-                    <td>
-                        ${movimiento.fecha_surtiendo ? `<button class="btn btn-success btn-sm" data-toggle="modal" data-target="#EntregarModal" data-movimiento-id="${movimiento.id}" data-movimiento-folio="${movimiento.folio}" data-codigo-surtidor="${movimiento.codigo_surtidor}">Entregar</button>` : `<button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#SurtirModal" data-movimiento-id="${movimiento.id}" data-movimiento-folio="${movimiento.folio}">Surtir</button>` }
-                        
-                    </td>
+                    <td><button class="btn btn-success btn-sm" data-toggle="modal" data-target="#EntregarModal" data-movimiento-id="${movimiento.id}" data-movimiento-folio="${movimiento.folio}" data-codigo-surtidor="${movimiento.codigo_surtidor}">Entregar</button></td>
                 `;
                 tableBody.appendChild(row);
             });
@@ -241,40 +226,18 @@ document.addEventListener('DOMContentLoaded', function () {
             folioRemisionGroup.style.display = 'none';
 
         }
-        document.getElementById('modal-condicion').value = movimiento.condicion || '';
-        document.getElementById('modal-condicion').title = movimiento.condicion || '';
         document.getElementById('modal-almacen').value = movimiento.almacen || '';
         document.getElementById('modal-almacen').title = movimiento.almacen || '';
         document.getElementById('modal-cliente').value = movimiento.cliente || '';
         document.getElementById('modal-cliente').title = movimiento.cliente || '';
-        document.getElementById('modal-pagado').value = movimiento.pagado ? 'Sí' : 'No';
-        document.getElementById('modal-pagado').title = movimiento.pagado ? 'Sí' : 'No';
-        document.getElementById('modal-metodo-pago').value = movimiento.metodo_pago || '';
-        document.getElementById('modal-metodo-pago').title = movimiento.metodo_pago || '';
         document.getElementById('modal-cantidad-pedida').value = movimiento.cantidad_pedida || '';
-        document.getElementById('modal-importe-pedido').value = `$${movimiento.importe_pedido || '0'}`;
-        document.getElementById('modal-iva-pedido').value = `$${movimiento.iva_pedido || '0'}`;
-        document.getElementById('modal-descuento-pedido').value = `$${movimiento.descuento_pedido || '0'}`;
-        document.getElementById('modal-total-pedido').value = `$${movimiento.total_pedido || '0'}`;
-        document.getElementById('modal-costo-venta').value = `$${movimiento.costo_venta || '0'}`;
-        document.getElementById('modal-utilidad').value = `$${movimiento.utilidad || '0'}`;
-        document.getElementById('modal-moneda').value = movimiento.moneda || '';
-        document.getElementById('modal-moneda').title = movimiento.moneda || '';
-        document.getElementById('modal-cancelado').checked = movimiento.cancelado ? true : false;
-        document.getElementById('modal-folioRemisiondo').checked = movimiento.facturado ? true : false;
-        document.getElementById('modal-devolucion').checked = movimiento.devolucion ? true : false;
         document.getElementById('modal-solo-domicilio').checked = movimiento.solo_domicilio ? true : false;
-        document.getElementById('modal-cod').checked = movimiento.cod ? true : false;
-        document.getElementById('modal-estado').value = movimiento.status || '';
-        document.getElementById('modal-estado').title = movimiento.status || '';
         if(movimiento.empleado){
-            console.log(movimiento)
             document.getElementById('modal-vendedor').value = `${movimiento.empleado.nombre} ${movimiento.empleado.apellido_paterno} ${movimiento.empleado.apellido_materno}` || '';
             document.getElementById('modal-vendedor').title = `${movimiento.empleado.nombre} ${movimiento.empleado.apellido_paterno} ${movimiento.empleado.apellido_materno}` || '';
         } else {
             document.getElementById('modal-vendedor').value = '';
         }
-
         const noDetalles = document.getElementsByClassName('no-detalles');
         const detalles = await fetchMovimientoDetalle(movimientoId);
         if (detalles.length == 0) {
@@ -374,11 +337,6 @@ document.addEventListener('DOMContentLoaded', function () {
             throw new Error('El código de surtidor no es válido.');
         }
 
-        if(empleado.codigo_rol != codigo_rol) {
-            showMessage('El código de surtidor no coincide con el que empezó a surtir.', 'error');
-            throw new Error('El código de surtidor no coincide con el que empezó a surtir.');
-        }
-
         document.getElementById('codigo-busqueda').hidden = false;
 
         // Cargar detalles de la venta en la tabla
@@ -434,11 +392,6 @@ document.addEventListener('DOMContentLoaded', function () {
             if(empleado.rol_id !== 2) {
                 showMessage('El código no es de surtidor.', 'error');
                 throw new Error('El código de surtidor no es válido.');
-            }
-
-            if(empleado.codigo_rol != codigo_rol) {
-                showMessage('El código de surtidor no coincide con el que empezó a surtir.', 'error');
-                throw new Error('El código de surtidor no coincide con el que empezó a surtir.');
             }
 
             document.getElementById('codigo-busqueda').hidden = false;

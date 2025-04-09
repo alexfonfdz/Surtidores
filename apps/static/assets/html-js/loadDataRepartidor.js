@@ -453,32 +453,12 @@ document.addEventListener('DOMContentLoaded', function () {
             folioRemisionGroup.style.display = 'none';
 
         }
-        document.getElementById('modal-condicion').value = movimiento.condicion || '';
-        document.getElementById('modal-condicion').title = movimiento.condicion || '';
         document.getElementById('modal-almacen').value = movimiento.almacen || '';
         document.getElementById('modal-almacen').title = movimiento.almacen || '';
         document.getElementById('modal-cliente').value = movimiento.cliente || '';
         document.getElementById('modal-cliente').title = movimiento.cliente || '';
-        document.getElementById('modal-pagado').value = movimiento.pagado ? 'Sí' : 'No';
-        document.getElementById('modal-pagado').title = movimiento.pagado ? 'Sí' : 'No';
-        document.getElementById('modal-metodo-pago').value = movimiento.metodo_pago || '';
-        document.getElementById('modal-metodo-pago').title = movimiento.metodo_pago || '';
         document.getElementById('modal-cantidad-pedida').value = movimiento.cantidad_pedida || '';
-        document.getElementById('modal-importe-pedido').value = `$${movimiento.importe_pedido || '0'}`;
-        document.getElementById('modal-iva-pedido').value = `$${movimiento.iva_pedido || '0'}`;
-        document.getElementById('modal-descuento-pedido').value = `$${movimiento.descuento_pedido || '0'}`;
-        document.getElementById('modal-total-pedido').value = `$${movimiento.total_pedido || '0'}`;
-        document.getElementById('modal-costo-venta').value = `$${movimiento.costo_venta || '0'}`;
-        document.getElementById('modal-utilidad').value = `$${movimiento.utilidad || '0'}`;
-        document.getElementById('modal-moneda').value = movimiento.moneda || '';
-        document.getElementById('modal-moneda').title = movimiento.moneda || '';
-        document.getElementById('modal-cancelado').checked = movimiento.cancelado ? true : false;
-        document.getElementById('modal-folioRemisiondo').checked = movimiento.facturado ? true : false;
-        document.getElementById('modal-devolucion').checked = movimiento.devolucion ? true : false;
         document.getElementById('modal-solo-domicilio').checked = movimiento.solo_domicilio ? true : false;
-        document.getElementById('modal-cod').checked = movimiento.cod ? true : false;
-        document.getElementById('modal-estado').value = movimiento.status || '';
-        document.getElementById('modal-estado').title = movimiento.status || '';
         document.getElementById('modal-surtidor').value = movimiento.surtidor ? `${movimiento.surtidor.nombre} ${movimiento.surtidor.apellido_paterno} ${movimiento.surtidor.apellido_materno}` : 'Sin surtidor';
         if(movimiento.empleado){
             document.getElementById('modal-vendedor').value = `${movimiento.empleado.nombre} ${movimiento.empleado.apellido_paterno} ${movimiento.empleado.apellido_materno}` || '';

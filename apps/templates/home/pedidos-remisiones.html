@@ -19,10 +19,6 @@
                                 <input type="checkbox" class="form-control form-checkbox" id="domicilio" name="domicilio" placeholder="Solo entregas a domicilio">
                                 <label class="form-label" for="domicilio">Solo entregas a domicilio</label>
                             </div>
-                            <div class="form-group form-check mt-3 d-flex align-items-center">
-                                <input type="checkbox" class="form-control form-checkbox" id="cod" name="cod" placeholder="Solo COD">
-                                <label class="form-label" for="cod">Solo COD</label>
-                            </div>
                         </div>
                         <div class="col-md-4 mt-3">
                             <select title="almacen" name="almacen" id="almacen" class="form-control">
@@ -35,35 +31,6 @@
                                 <i class="fas fa-times"></i>
                             </a>
                         </div>                         
-                        <div class="col-md-4 mt-3">
-                            <select title="Estado" name="estado" id="estado" class="form-control">
-                                <option value="" selected>Cualquier Estado</option>
-                                <option value="activo">Activos</option>
-                                <option value="cancelado">Cancelados</option>
-                                <option value="facturado">Facturados</option>
-                                <option value="por_facturar">Por Facturar</option>
-                                <option value="devolucion">Con devolución</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4 mt-3">
-                            <select title="Estatus" name="estatus" id="estatus" class="form-control">
-                                <option value="" selected>Cualquier Estatus</option>
-                                <option value="1">Pagado</option>
-                                <option value="0">No Pagado</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4 mt-3">
-                            <select title="Condición" name="condicion" id="condicion" class="form-control">
-                                <option value="" selected>Cualquier Condición</option>
-                                <option value="contado">Contado</option>
-                                <option value="credito">Crédito</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4 mt-3">
-                            <select title="Moneda" name="moneda" id="moneda" class="form-control">
-                                <option value="" selected>Cualquier Moneda</option>
-                            </select>
-                        </div>
                         <div class="col-md-4 mt-3">
                             <select title="Vendedor" name="vendedor" id="vendedor_id" class="form-control">
                                 <option value="" selected>Cualquier Vendedor</option>
@@ -98,17 +65,12 @@
                             <tr>
                                 <th class="truncate">Fecha</th>
                                 <th class="truncate">Tipo</th>
-                                <th class="truncate">Condición</th>
                                 <th class="truncate">Almacén</th>
                                 <th class="truncate">Folio</th>
-                                <th class="truncate">Factura</th>
                                 <th class="truncate">Cliente</th>
                                 <th class="truncate">Suc.</th>
                                 <th class="truncate">Cant. Pedida</th>
                                 <th class="truncate">Cant. Entregada</th>  
-                                <th class="truncate">Importe</th>
-                                <th class="truncate">Utilidad</th>
-                                <th class="truncate">Pagado</th>
                                 <th class="truncate">Entrega</th>
                                 <th class="truncate">Fecha Entrega</th>
                                 <th class="truncate">Acciones</th>
@@ -157,10 +119,6 @@
                                     <div class="col-6"><span id="fecha-movimiento"></span></div>
                                 </div>
                                 <div class="row">
-                                    <div class="col-6"><strong>Condición:</strong></div>
-                                    <div class="col-6"><span id="condicion2"></span></div>
-                                </div>
-                                <div class="row">
                                     <div class="col-6"><strong>Almacén:</strong></div>
                                     <div class="col-6"><span id="almacen2"></span></div>
                                 </div>
@@ -181,64 +139,20 @@
                                     <div class="col-6"><span id="sucursal"></span></div>
                                 </div>
                                 <div class="row">
-                                    <div class="col-6"><strong>Pagado:</strong></div>
-                                    <div class="col-6"><span id="pagado"></span></div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-6"><strong>Método de Pago:</strong></div>
-                                    <div class="col-6"><span id="metodo-pago"></span></div>
-                                </div>
-                                <div class="row">
                                     <div class="col-6"><strong>Cantidad Pedida:</strong></div>
                                     <div class="col-6"><span id="cantidad-pedida"></span></div>
                                 </div>
                                 <div class="row">
-                                    <div class="col-6"><strong>Importe Pedido:</strong></div>
-                                    <div class="col-6"><span id="importe-pedido"></span></div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-6"><strong>IVA Pedido:</strong></div>
-                                    <div class="col-6"><span id="iva-pedido"></span></div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-6"><strong>Descuento Pedido:</strong></div>
-                                    <div class="col-6"><span id="descuento-pedido"></span></div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-6"><strong>Total Pedido:</strong></div>
-                                    <div class="col-6"><span id="total-pedido"></span></div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-6"><strong>Utilidad:</strong></div>
-                                    <div class="col-6"><span id="utilidad"></span></div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-6"><strong>Moneda:</strong></div>
-                                    <div class="col-6"><span id="moneda2"></span></div>
+                                    <div class="col-6"><strong>Cantidad Entregada:</strong></div>
+                                    <div class="col-6"><span id="cantidad-entregada"></span></div>
                                 </div>
                                 <div class="row">
                                     <div class="col-6"><strong>Tipo Movimiento:</strong></div>
                                     <div class="col-6"><span id="tipo_movimiento"></span></div>
                                 </div>
                                 <div class="row">
-                                    <div class="col-6"><strong>Cancelado:</strong></div>
-                                    <div class="col-6"><span id="cancelado"></span></div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-6"><strong>Facturado:</strong></div>
-                                    <div class="col-6"><span id="facturado"></span></div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-6"><strong>Devolución:</strong></div>
-                                    <div class="col-6"><span id="devolucion"></span></div>
-                                </div>
-                                <div class="row">
                                     <div class="col-6"><strong>Solo Domicilio:</strong></div>
                                     <div class="col-6"><span id="solo-domicilio"></span></div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-6"><strong>COD:</strong></div>
-                                    <div class="col-6"><span id="cod2"></span></div>
                                 </div>
                             </div>
                         </div>
@@ -296,7 +210,6 @@
                                     <p><strong>Panel:</strong> <span id="panel-info"></span></p>
                                     <p><strong>Repartidor:</strong> <span id="repartidor-info"></span></p>
                                 </div>
-                                <p><strong>Comienzo de surtido:</strong> <span id="comienzo-surtido"></span></p>
                                 <p><strong>Finalizar Entrega:</strong> <span id="entrega-surtido"></span></p>
                                 <div id="cosas-remision2">
                                     <p><strong>Entrega de Panel a Repartidor:</strong> <span id="panel-repartidor"></span></p>

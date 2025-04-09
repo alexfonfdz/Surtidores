@@ -10,7 +10,6 @@ document.addEventListener('DOMContentLoaded', async function () {
     const almacenSelect = document.getElementById('almacen');
     const surtidorSelect = document.getElementById('surtidor_select');
     const vendedoresSelect = document.getElementById('vendedor_id');
-    const monedaSelect = document.getElementById('moneda');
 
     let currentPage = 1;
     let totalPages = 1;
@@ -50,24 +49,12 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     }
 
-    // Función para llenar el select de monedas
-    async function populateMonedas() {
-        const monedas = await fetchMonedas();
-        if (monedas) {
-            monedaSelect.innerHTML = '<option value="">Cualquier Moneda</option>'; // Opción por defecto
-            monedas.forEach(moneda => {
-                monedaSelect.innerHTML += `<option value="${moneda}">${moneda}</option>`;
-            });
-        }
-    }
 
     async function fetchAndRenderMovimientos(page = 1) {
         const search = document.getElementById('search').value;
         const almacen = document.getElementById('almacen').value;
         const vendedorId = document.getElementById('vendedor_id').value;
-        const moneda = document.getElementById('moneda').value;
         const soloDomicilio = document.getElementById('domicilio').checked;
-        const cod = document.getElementById('cod').checked;
         const surtidorId = document.getElementById('surtidor_select').value;
         const rangoFecha = document.getElementById('rango_fecha').value;
 
@@ -86,24 +73,16 @@ document.addEventListener('DOMContentLoaded', async function () {
             }
         }
 
-        const condicion = document.getElementById('condicion').value;
-        const estado = document.getElementById('estado').value;
-        const estatus = document.getElementById('estatus').value;
         const tipo_movimiento = document.getElementById('tipo-movimiento').value;
         const filters = {
             search: search,
             almacen: almacen,
             vendedor_id: vendedorId,
-            moneda: moneda,
             surtidor_id: surtidorId,
             domicilio: soloDomicilio ? 'si' : 'no',
-            cod: cod ? 'si' : 'no',
             desde: fechaInicioFormat || '',
             hasta: fechaFinFormat || '',
-            condicion: condicion,
-            estado: estado,
             tipo_movimiento: tipo_movimiento,
-            status: estatus === '1' ? 1 : estatus === '0' ? 0 : '',
             page: page,
             page_size: 10
         };
@@ -141,17 +120,12 @@ document.addEventListener('DOMContentLoaded', async function () {
                 row.innerHTML = `
                     <td class="truncate">${fechaMovimiento || ""}</td>
                     <td class="truncate">${movimiento.tipo_movimiento || ""}</td>
-                    <td class="truncate">${movimiento.condicion || ""}</td>
                     <td class="truncate">${movimiento.almacen || ""}</td>
                     <td class="truncate">${folio || ""}</td>
-                    <td class="truncate">${movimiento.folio_relacionado || "Por facturar"}</td>
                     <td class="truncate">${movimiento.cliente || ""}</td>
                     <td class="truncate">${movimiento.sucursal || ""}</td>
                     <td class="truncate">${movimiento.cantidad_pedida || "0"}</td>
                     <td class="truncate">${movimiento.cantidad_entregada || "0"}</td>
-                    <td class="truncate">$${movimiento.total_pedido || "0"}</td>
-                    <td class="truncate">$${movimiento.utilidad || "0"}</td>
-                    <td class="truncate">${pagado || ""}</td>
                     <td class="truncate">${entrega || ""}</td>
                     <td class="truncate">${fechaEntrega || ""}</td>
                     <td><button class="btn btn-primary btn-sm ver_modal" data-toggle="modal" data-target="#movimientoModal" data-movimiento-id="${movimiento.id}">Ver</button></td>
@@ -194,13 +168,8 @@ document.addEventListener('DOMContentLoaded', async function () {
         document.getElementById('search').value = '';
         document.getElementById('almacen').value = '';
         document.getElementById('vendedor_id').value = '';
-        document.getElementById('moneda').value = '';
         document.getElementById('domicilio').checked = false;
-        document.getElementById('cod').checked = false;
         document.getElementById('rango_fecha').value = '';
-        document.getElementById('condicion').value = '';
-        document.getElementById('estado').value = '';
-        document.getElementById('estatus').value = '';
         document.getElementById('tipo-movimiento').value = '';
         document.getElementById('surtidor_select').value = '';
         fetchAndRenderMovimientos();
@@ -388,7 +357,6 @@ document.addEventListener('DOMContentLoaded', async function () {
         await showMovimientoModal(document.getElementById('EntregarModal_movimientoId').value);
         document.getElementById('EntregarModal_movimientoId').value = '';
         document.getElementById('EntregarModal_codigoRol').value = '';
-        document.getElementById('EntregarModalFolio').textContent = '';
         document.getElementById('EntregarModal_codigoSurtidor').value = '';
         document.getElementById('EntregarModal_codigoSurtidor').readOnly = false;
         document.getElementById('EntregarModalTable').style.display = 'none';
@@ -548,7 +516,6 @@ document.addEventListener('DOMContentLoaded', async function () {
             // Parte 1: Información del movimiento
             document.getElementById('empleado-info').textContent = `${movimiento.empleado ? `${movimiento.empleado.clave_empleado} - ${movimiento.empleado.nombre} ${movimiento.empleado.apellido_paterno} ${movimiento.empleado.apellido_materno} `: 'N/A'}`;
             document.getElementById('fecha-movimiento').textContent = fechaMovimiento;
-            document.getElementById('condicion2').textContent = movimiento.condicion;
             document.getElementById('almacen2').textContent = movimiento.almacen;
             document.getElementById('folio').textContent = movimiento.tipo_movimiento === 'Remisión' ? `#${movimiento.folio}` : movimiento.folio;
             document.getElementById('folio-pedido').textContent = `${movimiento.tipo_movimiento == "Remisión" ? `${movimiento.folio_remision}` || 'N/A': 'N/A'}`;
@@ -560,21 +527,9 @@ document.addEventListener('DOMContentLoaded', async function () {
             }
             document.getElementById('cliente').textContent = movimiento.cliente;
             document.getElementById('sucursal').textContent = movimiento.sucursal;
-            document.getElementById('pagado').textContent = movimiento.pagado ? 'Sí' : 'No';
-            document.getElementById('metodo-pago').textContent = movimiento.metodo_pago;
             document.getElementById('cantidad-pedida').textContent = movimiento.cantidad_pedida;
-            document.getElementById('importe-pedido').textContent = `$${movimiento.importe_pedido}`;
-            document.getElementById('iva-pedido').textContent = `$${movimiento.iva_pedido}`;
-            document.getElementById('descuento-pedido').textContent = `$${movimiento.descuento_pedido}`;
-            document.getElementById('total-pedido').textContent = `$${movimiento.total_pedido}`;
-            document.getElementById('utilidad').textContent = `$${movimiento.utilidad}`;
-            document.getElementById('moneda2').textContent = movimiento.moneda;
             document.getElementById('tipo_movimiento').textContent = movimiento.tipo_movimiento;
-            document.getElementById('cancelado').textContent = movimiento.cancelado ? 'Sí' : 'No';
-            document.getElementById('facturado').textContent = movimiento.facturado ? 'Sí' : 'No';
-            document.getElementById('devolucion').textContent = movimiento.devolucion ? 'Sí' : 'No';
             document.getElementById('solo-domicilio').textContent = movimiento.solo_domicilio ? 'Sí' : 'No';
-            document.getElementById('cod2').textContent = movimiento.cod ? 'Sí' : 'No';
     
             // Parte 2: Detalles del pedido
             const pedidoDetalles = document.getElementById('pedido-detalles');
@@ -626,7 +581,6 @@ document.addEventListener('DOMContentLoaded', async function () {
                 document.getElementById('repartidor-info').textContent = movimiento.repartidor
                     ? `${movimiento.repartidor.clave_empleado} - ${movimiento.repartidor.nombre} ${movimiento.repartidor.apellido_paterno} ${movimiento.repartidor.apellido_materno}`
                     : 'N/A';
-                document.getElementById('comienzo-surtido').textContent = fechaSurtido;
                 document.getElementById('entrega-surtido').textContent = fechaEntrega;
                 document.getElementById('panel-repartidor').textContent = fechaEntregaRepartidor;
                 document.getElementById('entrega-repartidor').textContent = fechaEntregaRepartidorFin;
@@ -658,28 +612,15 @@ document.addEventListener('DOMContentLoaded', async function () {
         // Limpiar el modal al cerrarlo
         document.getElementById('empleado-info').textContent = '';
         document.getElementById('fecha-movimiento').textContent = '';
-        document.getElementById('condicion2').textContent = '';
         document.getElementById('almacen2').textContent = '';
         document.getElementById('folio').textContent = '';
         document.getElementById('folio-pedido').textContent = '';
         document.getElementById('folio-pedido-div').style.display = 'none';
         document.getElementById('cliente').textContent = '';
         document.getElementById('sucursal').textContent = '';
-        document.getElementById('pagado').textContent = '';
-        document.getElementById('metodo-pago').textContent = '';
         document.getElementById('cantidad-pedida').textContent = '';
-        document.getElementById('importe-pedido').textContent = '';
-        document.getElementById('iva-pedido').textContent = '';
-        document.getElementById('descuento-pedido').textContent = '';
-        document.getElementById('total-pedido').textContent = '';
-        document.getElementById('utilidad').textContent = '';
-        document.getElementById('moneda2').textContent = '';
         document.getElementById('tipo_movimiento').textContent = '';
-        document.getElementById('cancelado').textContent = '';
-        document.getElementById('facturado').textContent = '';
-        document.getElementById('devolucion').textContent = '';
         document.getElementById('solo-domicilio').textContent = '';
-        document.getElementById('cod2').textContent = '';
         document.getElementById('surtidor-info').textContent = '';
         document.getElementById('panel-info').textContent = '';
         document.getElementById('repartidor-info').textContent = '';
@@ -695,5 +636,4 @@ document.addEventListener('DOMContentLoaded', async function () {
     await populateAlmacenes();
     await populateVendedores();
     await populateSurtidores();
-    await populateMonedas();
 });
