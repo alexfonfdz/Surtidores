@@ -590,7 +590,6 @@ document.addEventListener('DOMContentLoaded', async function () {
                 document.getElementById('surtidor-info').textContent = movimiento.surtidor
                     ? `${movimiento.surtidor.clave_empleado} - ${movimiento.surtidor.nombre} ${movimiento.surtidor.apellido_paterno} ${movimiento.surtidor.apellido_materno}`
                     : 'N/A';
-                document.getElementById('comienzo-surtido').textContent = fechaSurtido;
                 document.getElementById('entrega-surtido').textContent = fechaEntrega;
                 document.getElementById('cosas-remision').style.display = 'none';
                 document.getElementById('cosas-remision2').style.display = 'none';

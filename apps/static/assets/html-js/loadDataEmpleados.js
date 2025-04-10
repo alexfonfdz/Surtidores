@@ -258,7 +258,7 @@ document.addEventListener("DOMContentLoaded", () => {
     
         updateEmpleadosButton.addEventListener("click", async () => {
             await updateEmpleados();
-            fetchAndRenderEmpleados();
+            await fetchAndRenderEmpleados();
         });
     
         prevPageButton.addEventListener("click", () => {

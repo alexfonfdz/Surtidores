@@ -13,7 +13,7 @@ async function fetchAlmacenes() {
         const data = await response.json();
         return data;
     } catch (error) {
-        showMessage('Hubo un problema al obtener los almacenes.', 'error');
+        throw new Error('Hubo un problema al obtener los almacenes.');
     }
 }
 
@@ -32,7 +32,6 @@ async function fetchVendedores() {
         const data = await response.json();
         return data;
     } catch (error) {
-        showMessage('Hubo un problema al obtener los vendedores.', 'error');
         return [];
     }
 }
@@ -52,7 +51,7 @@ async function fetchMonedas() {
         const data = await response.json();
         return data;
     } catch (error) {
-        showMessage('Hubo un problema al obtener las monedas.', 'error');
+        throw new Error('Hubo un problema al obtener las monedas.');
     }
 }
 // Función para obtener monedas
@@ -70,7 +69,7 @@ async function fetchSurtidores() {
         const data = await response.json();
         return data;
     } catch (error) {
-        showMessage('Hubo un problema al obtener las monedas.', 'error');
+        throw new Error('Hubo un problema al obtener los surtidores.');
     }
 }
 
@@ -155,7 +154,6 @@ async function updateMovimientoDetalle(movimientoId, surtidorId, detalles) {
         return result;
 
     } catch (error) {
-        showMessage('Hubo un problema al guardar los cambios.', 'error');
         throw error;  // Rethrow para que el error pueda ser manejado más arriba si es necesario
     }
 }

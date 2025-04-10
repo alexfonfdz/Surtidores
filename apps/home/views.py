@@ -381,7 +381,7 @@ def update_empleado(request):
             cur_m.execute("""
                 UPDATE home_movimiento
                 SET codigo_surtidor = %s
-                WHERE surtidor_id = %s;
+                WHERE surtidor_inicio_id = %s;
             """, (codigo_rol, id_empleado))
 
             conn_m.commit()
@@ -487,8 +487,9 @@ def get_vendedores(request):
         if vendedores:
             vendedores_ids = [vendedor[0] for vendedor in vendedores if vendedor[0] is not None]
             if vendedores_ids:
-                query = f"SELECT id, nombre, apellido_paterno, apellido_materno FROM home_empleado WHERE id IN {tuple(vendedores_ids)} ORDER BY nombre ASC;"
-                cur.execute(query)
+                # Construir la consulta solo si hay IDs en vendedores_ids
+                query = f"SELECT id, nombre, apellido_paterno, apellido_materno FROM home_empleado WHERE id IN ({', '.join(['%s'] * len(vendedores_ids))}) ORDER BY nombre ASC;"
+                cur.execute(query, vendedores_ids)
                 vendedores = cur.fetchall()
                 # Convertir resultados a lista de diccionarios y manejar caracteres no ASCII
                 vendedores = [
@@ -510,8 +511,10 @@ def get_vendedores(request):
 
         return JsonResponse(vendedores, safe=False)
     except m.Error as e:
+        print(e)
         return JsonResponse({'error': f"MySQL error: {str(e)}"}, status=500)
     except Exception as e:
+        print(e)
         return JsonResponse({'error': f"General error: {str(e)}"}, status=500)
     
 @csrf_exempt
@@ -545,8 +548,10 @@ def get_surtidor(request):
         if surtidores:
             surtidores_ids = [surtidor[0] for surtidor in surtidores if surtidor[0] is not None]
             if surtidores_ids:
-                query = f"SELECT id, nombre, apellido_paterno, apellido_materno FROM home_empleado WHERE id IN {tuple(surtidores_ids)} ORDER BY nombre ASC;"
-                cur.execute(query)
+                # Construir la consulta solo si hay IDs en surtidores_ids
+                placeholders = ', '.join(['%s'] * len(surtidores_ids))
+                query = f"SELECT id, nombre, apellido_paterno, apellido_materno FROM home_empleado WHERE id IN ({placeholders}) ORDER BY nombre ASC;"
+                cur.execute(query, surtidores_ids)
                 surtidores = cur.fetchall()
                 # Convertir resultados a lista de diccionarios y manejar caracteres no ASCII
                 surtidores = [
@@ -895,7 +900,7 @@ def update_movimiento_detalle(request):
         conn.commit()
 
         # Actualizar el estado de la venta
-        cur.execute("SELECT SUM(cantidad_entregada), SUM(importe_entregado), SUM(iva_entregado), SUM(descuento_entregado), SUM(total_entregado) FROM home_movimientodetalle WHERE movimiento_id = %s;", (movimiento_id,))
+        cur.execute("SELECT SUM(cantidad_entregada*factor_um), SUM(importe_entregado), SUM(iva_entregado), SUM(descuento_entregado), SUM(total_entregado) FROM home_movimientodetalle WHERE movimiento_id = %s;", (movimiento_id,))
         totales = cur.fetchone()
         cantidad_entregada_total, importe_entregado_total, iva_entregado_total, descuento_entregado_total, total_entregado_total = totales
 
