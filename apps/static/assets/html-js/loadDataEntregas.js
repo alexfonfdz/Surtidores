@@ -64,24 +64,16 @@ document.addEventListener('DOMContentLoaded', function () {
                 const movimientoRol = data[0][3];
                 const html = document.querySelector('html');
                 
-                if(!movimientoSurtiendo) {
-                    document.getElementById('SurtirModal_movimientoId').value = movimientoId;
-                    document.getElementById('SurtirModalFolio').textContent = '(Folio: '+movimientoFolio+')';
-                    html.classList.remove('perfect-scrollbar-on');
-                    saveSurtirButton.style.display = 'block';
-                    $('#SurtirModal').modal('show');
-                }else {
-                    document.getElementById('EntregarModal_movimientoId').value = movimientoId;
-                    document.getElementById('EntregarModal_codigoRol').value = movimientoRol;
-                    document.getElementById('EntregarModalFolio').textContent = '(Folio: '+movimientoFolio+')';
-                    html.classList.remove('perfect-scrollbar-on');
-                    saveEntregarIncompletoButton.style.display = 'block';
-                    saveEntregarCompletoButton.style.display = 'block';
-                    saveEntregarButton.style.display = 'none';
-                    entregarModalTable.style.display = 'none';
-                    
-                    $('#EntregarModal').modal('show');
-                }
+                document.getElementById('EntregarModal_movimientoId').value = movimientoId;
+                document.getElementById('EntregarModal_codigoRol').value = movimientoRol;
+                document.getElementById('EntregarModalFolio').textContent = '(Folio: '+movimientoFolio+')';
+                html.classList.remove('perfect-scrollbar-on');
+                saveEntregarIncompletoButton.style.display = 'block';
+                saveEntregarCompletoButton.style.display = 'block';
+                saveEntregarButton.style.display = 'none';
+                entregarModalTable.style.display = 'none';
+                
+                $('#EntregarModal').modal('show');
                 
 
             } else if(event.target.value === '') {
